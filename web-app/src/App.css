@@ -1,0 +1,130 @@
+:root {
+  --adm-color-primary: #6F4E37;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #F5F5F7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.nav-bar {
+  background: white;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.search-wrapper {
+  padding: 12px;
+  background: white;
+  border-bottom: 1px solid #eee;
+}
+
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.main-content {
+  padding: 16px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.promo-card {
+  margin-bottom: 24px;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.promo-image-container {
+  position: relative;
+}
+
+.promo-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ff4d4f;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.promo-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promo-info h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.promo-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.coffee-list {
+  --border-inner: none;
+  --border-top: none;
+  --border-bottom: none;
+  background: transparent;
+}
+
+.coffee-list .adm-list-item {
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.coffee-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.item-extra {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.price {
+  font-weight: 700;
+  color: #6F4E37;
+  font-size: 16px;
+}
+
+.add-btn {
+  border-radius: 16px !important;
+}
+
+.tab-bar-wrapper {
+  background: white;
+  border-top: 1px solid #eee;
+  padding-bottom: env(safe-area-inset-bottom);
+}
