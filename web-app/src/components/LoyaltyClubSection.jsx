@@ -3,10 +3,6 @@ import { Card, List, SpinLoading } from 'antd-mobile'
 import { Gift } from 'lucide-react'
 import '../App.css'
 
-/**
- * Loyalty Club block to display on the Me / personal information page.
- * Receives data and callbacks from parent so the Me page can be owned by your team.
- */
 function LoyaltyClubSection({ balance, transactions = [], loading, error, onRefresh }) {
   return (
     <>

@@ -94,7 +94,6 @@ function Home() {
         {activeKey === 'me' ? (
           <PullToRefresh onRefresh={loadLoyaltyData}>
             <div className="main-content">
-              {/* Me / personal information page content from your team goes above */}
               <LoyaltyClubSection
                 balance={loyaltyBalance}
                 transactions={loyaltyTransactions}

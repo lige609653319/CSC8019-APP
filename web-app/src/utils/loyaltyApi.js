@@ -1,10 +1,5 @@
 import request from './request';
 
-/**
- * Loyalty API – uses shared request so Authorization is set automatically.
- * Backend returns { code, message, data }; request interceptor returns that object.
- */
-
 export const fetchLoyaltyBalance = async () => {
   const res = await request.get('/loyalty/me');
   return res?.data ?? { username: '', pointsBalance: 0 };
