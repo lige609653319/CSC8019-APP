@@ -1,14 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   NavBar, 
   SearchBar, 
   Card, 
   Button, 
   Badge, 
-  Space, 
   Image, 
   TabBar, 
-  Tag,
   List,
   PullToRefresh
 } from 'antd-mobile'
@@ -16,8 +14,10 @@ import {
   ShoppingCart, 
   LayoutGrid, 
   List as ListIcon, 
-  User 
+  User
 } from 'lucide-react'
+import { fetchLoyaltyBalance, fetchLoyaltyTransactions } from '../utils/loyaltyApi'
+import LoyaltyClubSection from '../components/LoyaltyClubSection'
 import '../App.css'
 
 const COFFEE_DATA = [
@@ -31,6 +31,33 @@ const COFFEE_DATA = [
 function Home() {
   const [cartCount, setCartCount] = useState(0)
   const [activeKey, setActiveKey] = useState('home')
+  const [loyaltyBalance, setLoyaltyBalance] = useState(null)
+  const [loyaltyTransactions, setLoyaltyTransactions] = useState([])
+  const [loyaltyLoading, setLoyaltyLoading] = useState(false)
+  const [loyaltyError, setLoyaltyError] = useState('')
+
+  const loadLoyaltyData = async () => {
+    setLoyaltyLoading(true)
+    setLoyaltyError('')
+    try {
+      const [balance, transactions] = await Promise.all([
+        fetchLoyaltyBalance(),
+        fetchLoyaltyTransactions(5)
+      ])
+      setLoyaltyBalance(balance)
+      setLoyaltyTransactions(Array.isArray(transactions) ? transactions : [])
+    } catch (err) {
+      setLoyaltyError(err.response?.data?.message || err.message || 'Failed to load loyalty data')
+      setLoyaltyBalance(null)
+      setLoyaltyTransactions([])
+    } finally {
+      setLoyaltyLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeKey === 'me') loadLoyaltyData()
+  }, [activeKey])
 
   const addToCart = (e) => {
     e.stopPropagation()
@@ -64,62 +91,78 @@ function Home() {
       </div>
 
       <div className="content-scroll">
-        <PullToRefresh onRefresh={async () => console.log('refresh')}>
-          <div className="main-content">
-            <h2 className="section-title">Exclusive Offers</h2>
-            <Card className="promo-card">
-              <div className="promo-image-container">
-                <Image 
-                  src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80" 
-                  lazy 
-                  style={{ borderRadius: 8, height: 160 }}
-                />
-                <div className="promo-tag">New</div>
-              </div>
-              <div className="promo-info">
-                <h3>Spring Collection</h3>
-                <p>Taste the freshness of our new seasonal blends.</p>
-                <Button color="primary" size="small" shape="rounded">Order Now</Button>
-              </div>
-            </Card>
+        {activeKey === 'me' ? (
+          <PullToRefresh onRefresh={loadLoyaltyData}>
+            <div className="main-content">
+              {/* Me / personal information page content from your team goes above */}
+              <LoyaltyClubSection
+                balance={loyaltyBalance}
+                transactions={loyaltyTransactions}
+                loading={loyaltyLoading}
+                error={loyaltyError || undefined}
+                onRefresh={loadLoyaltyData}
+              />
+              <div style={{ height: 100 }} />
+            </div>
+          </PullToRefresh>
+        ) : (
+          <PullToRefresh onRefresh={async () => console.log('refresh')}>
+            <div className="main-content">
+              <h2 className="section-title">Exclusive Offers</h2>
+              <Card className="promo-card">
+                <div className="promo-image-container">
+                  <Image 
+                    src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80" 
+                    lazy 
+                    style={{ borderRadius: 8, height: 160 }}
+                  />
+                  <div className="promo-tag">New</div>
+                </div>
+                <div className="promo-info">
+                  <h3>Spring Collection</h3>
+                  <p>Taste the freshness of our new seasonal blends.</p>
+                  <Button color="primary" size="small" shape="rounded">Order Now</Button>
+                </div>
+              </Card>
 
-            <h2 className="section-title">Menu</h2>
-            <List className="coffee-list">
-              {COFFEE_DATA.map(coffee => (
-                <List.Item
-                  key={coffee.id}
-                  prefix={
-                    <Image
-                      src={coffee.image}
-                      style={{ borderRadius: 8 }}
-                      fit="cover"
-                      width={80}
-                      height={80}
-                    />
-                  }
-                  description={coffee.description}
-                  extra={
-                    <div className="item-extra">
-                      <span className="price">${coffee.price.toFixed(2)}</span>
-                      <Button 
-                        size='mini' 
-                        color='primary' 
-                        fill='solid' 
-                        className="add-btn"
-                        onClick={addToCart}
-                      >
-                        Add
-                      </Button>
-                    </div>
-                  }
-                >
-                  <span className="coffee-name">{coffee.name}</span>
-                </List.Item>
-              ))}
-            </List>
-            <div style={{ height: 100 }} />
-          </div>
-        </PullToRefresh>
+              <h2 className="section-title">Menu</h2>
+              <List className="coffee-list">
+                {COFFEE_DATA.map(coffee => (
+                  <List.Item
+                    key={coffee.id}
+                    prefix={
+                      <Image
+                        src={coffee.image}
+                        style={{ borderRadius: 8 }}
+                        fit="cover"
+                        width={80}
+                        height={80}
+                      />
+                    }
+                    description={coffee.description}
+                    extra={
+                      <div className="item-extra">
+                        <span className="price">${coffee.price.toFixed(2)}</span>
+                        <Button 
+                          size='mini' 
+                          color='primary' 
+                          fill='solid' 
+                          className="add-btn"
+                          onClick={addToCart}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                    }
+                  >
+                    <span className="coffee-name">{coffee.name}</span>
+                  </List.Item>
+                ))}
+              </List>
+              <div style={{ height: 100 }} />
+            </div>
+          </PullToRefresh>
+        )}
       </div>
 
       <div className="tab-bar-wrapper">
