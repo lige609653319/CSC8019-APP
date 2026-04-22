@@ -7,7 +7,8 @@ export const getAuthHeaders = (token) => {
     'Content-Type': 'application/json',
   };
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    // Token already includes "Bearer " prefix from login, so use directly
+    headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
   }
   return headers;
 };
@@ -32,7 +33,10 @@ export const storeApi = {
   getStoreById: async (storeId = 1) => {
     try {
       console.log(`[Store API] Fetching store: ${storeId}`);
-      const response = await fetch(`${API_BASE_URL}/store/${storeId}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/store/${storeId}`, {
+        headers: getAuthHeaders(token)
+      });
       const data = await handleResponse(response, 'getStoreById');
       console.log('[Store API] Success:', data);
       return data.data;
@@ -49,7 +53,10 @@ export const menuApi = {
   getMenusByStore: async (storeId = 1) => {
     try {
       console.log(`[Menu API] Fetching menus for storeId: ${storeId}`);
-      const response = await fetch(`${API_BASE_URL}/menu/search?storeId=${storeId}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/menu/search?storeId=${storeId}`, {
+        headers: getAuthHeaders(token)
+      });
       const data = await handleResponse(response, 'getMenusByStore');
       console.log('[Menu API] Success:', data);
       return data.data || [];
@@ -67,7 +74,10 @@ export const menuApi = {
       if (category) params.append('category', category);
       
       console.log(`[Menu API] Searching menus: ${params.toString()}`);
-      const response = await fetch(`${API_BASE_URL}/menu/search?${params}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/menu/search?${params}`, {
+        headers: getAuthHeaders(token)
+      });
       const data = await handleResponse(response, 'searchMenus');
       return data.data || [];
     } catch (error) {
@@ -80,7 +90,10 @@ export const menuApi = {
   getMenuById: async (id) => {
     try {
       console.log(`[Menu API] Fetching menu: ${id}`);
-      const response = await fetch(`${API_BASE_URL}/menu/${id}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/menu/${id}`, {
+        headers: getAuthHeaders(token)
+      });
       const data = await handleResponse(response, 'getMenuById');
       return data.data;
     } catch (error) {
@@ -96,11 +109,10 @@ export const orderApi = {
   createOrder: async (orderData) => {
     try {
       console.log('[Order API] Creating order:', orderData);
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/orders/create`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(token),
         body: JSON.stringify(orderData),
       });
       const data = await handleResponse(response, 'createOrder');
@@ -116,7 +128,10 @@ export const orderApi = {
   getOrdersByCustomer: async (customerId) => {
     try {
       console.log(`[Order API] Fetching orders for customer: ${customerId}`);
-      const response = await fetch(`${API_BASE_URL}/orders/${customerId}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/orders/${customerId}`, {
+        headers: getAuthHeaders(token)
+      });
       const data = await handleResponse(response, 'getOrdersByCustomer');
       return data.data || [];
     } catch (error) {

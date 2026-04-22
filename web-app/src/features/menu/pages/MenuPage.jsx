@@ -82,7 +82,7 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
               <div className="error-content">
                 <div className="error-icon">⚠️</div>
                 <div>{error}</div>
-                <Button color="primary" size="small" onClick={loadMenus}>
+                <Button color="primary" size="small" onClick={loadData}>
                   Retry
                 </Button>
               </div>
