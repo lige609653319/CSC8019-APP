@@ -1,47 +1,34 @@
-import React, { useState } from 'react'
-import { CartProvider } from './shared/context/CartContext'
-import { MenuPage } from './features/menu/pages/MenuPage'
-import { MenuDetailPage } from './features/menu/pages/MenuDetailPage'
-import { CartPage } from './features/menu/pages/CartPage'
+import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Layout from './pages/Layout'
+import Login from './pages/Login'
+import Register from './pages/Register'
 import './App.css'
 
+// PrivateRoute component to protect routes
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" />;
+}
+
 function App() {
-  const [currentPage, setCurrentPage] = useState('menu')
-  const [selectedMenu, setSelectedMenu] = useState(null)
-
-  const handleSelectMenu = (menu) => {
-    setSelectedMenu(menu)
-    setCurrentPage('detail')
-  }
-
-  const handleBackFromDetail = () => {
-    setCurrentPage('menu')
-    setSelectedMenu(null)
-  }
-
-  const handleBackFromCart = () => {
-    setCurrentPage('menu')
-  }
-
-  const handleOpenCart = () => {
-    setCurrentPage('cart')
-  }
-
   return (
-    <CartProvider>
-      <div className="app-container">
-        {currentPage === 'menu' && (
-          <MenuPage onSelectMenu={handleSelectMenu} onOpenCart={handleOpenCart} />
-        )}
-        {currentPage === 'detail' && selectedMenu && (
-          <MenuDetailPage menu={selectedMenu} onBack={handleBackFromDetail} />
-        )}
-        {currentPage === 'cart' && (
-          <CartPage onBack={handleBackFromCart} />
-        )}
-      </div>
-    </CartProvider>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route 
+        path="/" 
+        element={
+          <PrivateRoute>
+            <Layout />
+          </PrivateRoute>
+        } 
+      />
+      {/* Redirect all other paths to home */}
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   )
 }
 
 export default App
+

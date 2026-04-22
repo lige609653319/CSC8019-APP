@@ -128,3 +128,7 @@ body {
   border-top: 1px solid #eee;
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+.loyalty-club-card {
+  background: linear-gradient(180deg, #fffbf7 0%, #fff 100%);
+}
