@@ -33,6 +33,8 @@ request.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // Clear token and redirect to login
       localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      localStorage.removeItem('userid');
       window.location.href = '/login';
     } else {
       // Global error Toast for other errors

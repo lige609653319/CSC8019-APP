@@ -14,11 +14,14 @@ const Login = () => {
       const response = await request.post('/auth/login', values);
       // Based on response format: { code: 200, message: "...", data: { token: "...", tokenHead: "..." } }
       if (response && response.code === 200 && response.data) {
-        const { token, tokenHead } = response.data;
+        const { token, tokenHead, id } = response.data;
         // Join tokenHead and token with a space if tokenHead doesn't already end with one
         const authHeader = tokenHead.endsWith(' ') ? `${tokenHead}${token}` : `${tokenHead} ${token}`;
         localStorage.setItem('token', authHeader);
         localStorage.setItem('username', values.username);
+        if (id) {
+          localStorage.setItem('userid', id);
+        }
         Toast.show({
           icon: 'success',
           content: 'Login successful',

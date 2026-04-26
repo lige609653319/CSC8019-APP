@@ -115,6 +115,8 @@ function Home() {
                                     fill='outline'
                                     onClick={() => {
                                         localStorage.removeItem('token');
+                                        localStorage.removeItem('username');
+                                        localStorage.removeItem('userid');
                                         window.location.reload();
                                     }}
                                 >
