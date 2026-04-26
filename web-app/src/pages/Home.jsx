@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { fetchLoyaltyBalance, fetchLoyaltyTransactions } from '../utils/loyaltyApi'
 import LoyaltyClubSection from '../components/LoyaltyClubSection'
-import TrainInfo from '../components/TrainInfo' // 导入列车信息组件
+import TrainInfo from '../components/TrainInfo'
 import '../App.css'
 
 const COFFEE_DATA = [
