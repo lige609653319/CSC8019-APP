@@ -1,11 +1,23 @@
 import React from 'react'
 import { Card, List, SpinLoading } from 'antd-mobile'
-import { Gift } from 'lucide-react'
+import { Gift, User } from 'lucide-react'
 import '../App.css'
 
-function LoyaltyClubSection({ balance, transactions = [], loading, error, onRefresh }) {
+function LoyaltyClubSection({ balance, transactions = [], loading, error, onRefresh, username }) {
+  const displayUsername = username || balance?.username || 'Member';
+
   return (
     <>
+      <div className="user-profile-header" style={{ padding: '20px 16px', marginBottom: 12, backgroundColor: '#fff', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+        <div style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#6F4E37', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+          <User size={32} />
+        </div>
+        <div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#333' }}>{displayUsername}</div>
+          <div style={{ fontSize: 14, color: '#666' }}>Welcome back to Coffee Shop</div>
+        </div>
+      </div>
+
       <h2 className="section-title">Loyalty Club</h2>
       <Card className="promo-card loyalty-club-card">
         {loading ? (
