@@ -199,32 +199,6 @@ function Home() {
             </div>
 
 
-            <button
-                onClick={() => setTrainModalVisible(true)}
-                style={{
-                    position: 'fixed',
-                    bottom: '80px',
-                    right: '16px',
-                    width: '56px',
-                    height: '56px',
-                    borderRadius: '50%',
-                    backgroundColor: '#6F4E37',
-                    color: 'white',
-                    border: 'none',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    cursor: 'pointer',
-                    zIndex: 1000,
-                    fontSize: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'transform 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-                🚂
-            </button>
 
 
             <TrainInfo

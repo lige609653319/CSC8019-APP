@@ -5,6 +5,7 @@ import Layout from './pages/Layout'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Orders from './pages/Orders'
+import { CartProvider } from './shared/context/CartContext'
 import './App.css'
 
 const PrivateRoute = ({ children }) => {
@@ -21,30 +22,32 @@ const PublicRoute = ({ children }) => {
 
 function App() {
     return (
-        <Routes>
-            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+        <CartProvider>
+            <Routes>
+                <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
-            <Route
-                path="/orders"
-                element={
-                    <PrivateRoute>
-                        <Orders />
-                    </PrivateRoute>
-                }
-            />
+                <Route
+                    path="/orders"
+                    element={
+                        <PrivateRoute>
+                            <Orders />
+                        </PrivateRoute>
+                    }
+                />
 
-            <Route
-                path="/"
-                element={
-                    <PrivateRoute>
-                        <Home />
-                    </PrivateRoute>
-                }
-            />
+                <Route
+                    path="/"
+                    element={
+                        <PrivateRoute>
+                            <Home />
+                        </PrivateRoute>
+                    }
+                />
 
-            <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+                <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+        </CartProvider>
     )
 }
 

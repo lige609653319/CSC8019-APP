@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import request from '../utils/request';
+import { useCart } from '../shared/context/CartContext';
 
-const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
+const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectStation }) => {
     const [loading, setLoading] = useState(false);
     const [trains, setTrains] = useState([]);
     const [filteredTrains, setFilteredTrains] = useState([]);
-    const [selectedStation, setSelectedStation] = useState('');
+    const [selectedStation, setSelectedStation] = useState(externalStation || '');
     const [stations, setStations] = useState([]);
     const [error, setError] = useState(null);
     const [lastUpdated, setLastUpdated] = useState('');
@@ -17,6 +18,13 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
         arrived: 0
     });
 
+    const { setTrainForOrder } = useCart();
+
+    useEffect(() => {
+        if (externalStation !== undefined) {
+            setSelectedStation(externalStation);
+        }
+    }, [externalStation]);
 
     const extractStations = (trainData) => {
         const stationSet = new Set();
@@ -26,6 +34,14 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
             }
         });
         return Array.from(stationSet).sort();
+    };
+
+    const isValidStationName = (stationName) => {
+        if (!stationName) return false;
+        if (stationName === 'Unknown') return false;
+        if (stationName.startsWith('Station ')) return false;
+        if (/^[A-Z0-9]{5,}$/.test(stationName)) return false;
+        return true;
     };
 
     const fetchTrains = useCallback(async () => {
@@ -39,20 +55,31 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
                 data = [];
             }
 
-            setTrains(data);
-            setFilteredTrains(data);
+            const validTrains = data.filter(train => {
+                const hasArrivalTime = train.scheduledArrivalTime || train.estimatedArrivalTime;
+                const isValidStation = isValidStationName(train.currentStation);
+                return hasArrivalTime && isValidStation;
+            });
 
-            // 提取车站列表
-            const stationList = extractStations(data);
+            const sortedData = [...validTrains].sort((a, b) => {
+                const timeA = new Date(a.scheduledArrivalTime || a.estimatedArrivalTime);
+                const timeB = new Date(b.scheduledArrivalTime || b.estimatedArrivalTime);
+                return timeA - timeB;
+            });
+
+            setTrains(sortedData);
+            setFilteredTrains(sortedData);
+
+            const stationList = extractStations(sortedData);
             setStations(stationList);
 
             setLastUpdated(new Date().toLocaleTimeString());
 
-            const total = data.length;
-            const arrived = data.filter(t => t.actualArrivalTime).length;
-            const onTime = data.filter(t => t.status === 'ON_TIME' && !t.actualArrivalTime).length;
-            const delayed = data.filter(t => t.status === 'DELAYED' && !t.actualArrivalTime).length;
-            const cancelled = data.filter(t => t.status === 'CANCELLED').length;
+            const total = sortedData.length;
+            const arrived = sortedData.filter(t => t.actualArrivalTime || t.status === 'ARRIVED').length;
+            const onTime = sortedData.filter(t => t.status === 'ON_TIME').length;
+            const delayed = sortedData.filter(t => t.status === 'DELAYED').length;
+            const cancelled = sortedData.filter(t => t.status === 'CANCELLED').length;
             setStats({ total, onTime, delayed, cancelled, arrived });
         } catch (err) {
             console.error('Failed to fetch train data:', err);
@@ -61,7 +88,6 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
             setLoading(false);
         }
     }, []);
-
 
     useEffect(() => {
         if (!selectedStation) {
@@ -83,7 +109,7 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
     }, [visible, fetchTrains]);
 
     const getStatusColor = (record) => {
-        if (record.actualArrivalTime) return '#52c41a';
+        if (record.actualArrivalTime || record.status === 'ARRIVED') return '#52c41a';
         switch (record.status) {
             case 'ON_TIME': return '#52c41a';
             case 'DELAYED': return '#faad14';
@@ -93,7 +119,7 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
     };
 
     const getStatusText = (record) => {
-        if (record.actualArrivalTime) return 'Arrived';
+        if (record.actualArrivalTime || record.status === 'ARRIVED') return 'Arrived';
         switch (record.status) {
             case 'ON_TIME': return 'On Time';
             case 'DELAYED': return `Delayed ${record.delayMinutes || ''}min`;
@@ -102,11 +128,10 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
         }
     };
 
-
     const calculatePreparationTime = (train) => {
         let baseTime = 5;
 
-        if (train.actualArrivalTime) {
+        if (train.actualArrivalTime || train.status === 'ARRIVED') {
             return 0;
         }
 
@@ -124,26 +149,40 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
         return baseTime;
     };
 
+    const handleStationChange = (station) => {
+        setSelectedStation(station);
+        if (onSelectStation) {
+            onSelectStation(station);
+        }
+    };
+
     const handleOrderCoffee = (train) => {
         const prepTime = calculatePreparationTime(train);
 
         if (prepTime === -1) {
-            alert(`❌ Train ${train.trainId} is CANCELLED. Cannot place order.`);
+            alert(`Train ${train.trainId} is CANCELLED. Cannot place order.`);
             return;
         }
 
-        let message = `☕ Order placed for train ${train.trainId}\n`;
-        message += `📍 Current: ${train.currentStation}\n`;
-        message += `📊 Status: ${getStatusText(train)}\n`;
+        setTrainForOrder({
+            trainId: train.trainId,
+            currentStation: train.currentStation,
+            arrivalTime: train.scheduledArrivalTime,
+            status: getStatusText(train),
+            platform: train.platform
+        });
+
+        let message = `Order placed for train ${train.trainId}\n`;
+        message += `Current: ${train.currentStation}\n`;
+        message += `Status: ${getStatusText(train)}\n`;
 
         if (prepTime === 0) {
-            message += `✅ Train has ARRIVED! Order will be ready NOW.`;
+            message += `Train has ARRIVED! Order will be ready NOW.`;
         } else {
-            message += `⏰ Order will be ready in ${prepTime} minutes (adjusted for train status).`;
+            message += `Order will be ready in ${prepTime} minutes (adjusted for train status).`;
         }
 
         alert(message);
-
 
         if (onSelectTrain) {
             onSelectTrain({ ...train, estimatedReadyMinutes: prepTime });
@@ -156,11 +195,10 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
         <div style={styles.overlay} onClick={onClose}>
             <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
                 <div style={styles.header}>
-                    <h2 style={styles.title}>🚂 Train Information</h2>
-                    <button onClick={onClose} style={styles.closeBtn}>✕</button>
+                    <h2 style={styles.title}>Train Information</h2>
+                    <button onClick={onClose} style={styles.closeBtn}>X</button>
                 </div>
 
-                {/* 统计卡片 */}
                 <div style={styles.statsContainer}>
                     <div style={styles.statCard}>
                         <div style={styles.statValue}>{stats.total}</div>
@@ -180,12 +218,11 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
                     </div>
                 </div>
 
-
                 <div style={styles.stationSelector}>
-                    <label style={styles.label}>📍 Select your current station:</label>
+                    <label style={styles.label}>Select your current station:</label>
                     <select
                         value={selectedStation}
-                        onChange={(e) => setSelectedStation(e.target.value)}
+                        onChange={(e) => handleStationChange(e.target.value)}
                         style={styles.stationSelect}
                     >
                         <option value="">All Stations</option>
@@ -193,21 +230,20 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
                             <option key={station} value={station}>{station}</option>
                         ))}
                     </select>
-                    <button onClick={fetchTrains} style={styles.refreshBtn}>🔄 Refresh</button>
+                    <button onClick={fetchTrains} style={styles.refreshBtn}>Refresh</button>
                 </div>
-
 
                 {selectedStation && (
                     <div style={styles.infoNote}>
-                        💡 Showing trains at <strong>{selectedStation}</strong>
+                        Showing trains at <strong>{selectedStation}</strong>
                         <br />
-                        ⏰ Order preparation time automatically adjusts based on train status
+                        Order preparation time automatically adjusts based on train status
                     </div>
                 )}
 
                 <div style={styles.updateTime}>Last updated: {lastUpdated || '--'}</div>
 
-                {error && <div style={styles.errorMsg}>⚠️ {error}</div>}
+                {error && <div style={styles.errorMsg}>Error: {error}</div>}
 
                 {loading && <div style={styles.loading}>Loading...</div>}
 
@@ -273,10 +309,8 @@ const TrainInfo = ({ visible, onClose, onSelectTrain }) => {
                     </div>
                 )}
 
-
                 <div style={styles.footerNote}>
-                    📋 <strong>Smart Order Strategy:</strong>
-                    {' '}On Time → 5min prep | Delayed → adjusted prep | Arrived → immediate | Cancelled → blocked
+                    Smart Order Strategy: On Time -&gt; 5min prep | Delayed -&gt; adjusted prep | Arrived -&gt; immediate | Cancelled -&gt; blocked
                 </div>
             </div>
         </div>
