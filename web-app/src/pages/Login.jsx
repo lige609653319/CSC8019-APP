@@ -14,13 +14,27 @@ const Login = () => {
       const response = await request.post('/auth/login', values);
       // Based on response format: { code: 200, message: "...", data: { token: "...", tokenHead: "..." } }
       if (response && response.code === 200 && response.data) {
-        const { token, tokenHead, id } = response.data;
+        const { token, tokenHead, id, role } = response.data;
+        
+        // Restriction: Only allow CLIENT to login
+        if (role && role !== 'CLIENT') {
+          Toast.show({
+            icon: 'fail',
+            content: 'Staff login is not allowed in this app',
+          });
+          setLoading(false);
+          return;
+        }
+
         // Join tokenHead and token with a space if tokenHead doesn't already end with one
         const authHeader = tokenHead.endsWith(' ') ? `${tokenHead}${token}` : `${tokenHead} ${token}`;
         localStorage.setItem('token', authHeader);
         localStorage.setItem('username', values.username);
         if (id) {
           localStorage.setItem('userid', id);
+        }
+        if (role) {
+          localStorage.setItem('role', role);
         }
         Toast.show({
           icon: 'success',
