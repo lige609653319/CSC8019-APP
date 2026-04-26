@@ -7,7 +7,7 @@ import { WebView } from 'react-native-webview';
  * Update this URL to your local dev server IP (e.g., http://192.168.1.5:5173)
  * You can find your IP address by running `ifconfig` (Mac) or `ipconfig` (Windows).
  */
-const WEB_APP_URL = 'http://10.90.72.99:5175/';
+const WEB_APP_URL = 'http://10.183.141.11:5175/';
 
 export default function App() {
   return (
