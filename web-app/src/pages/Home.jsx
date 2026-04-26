@@ -38,6 +38,7 @@ function Home() {
     const [loyaltyTransactions, setLoyaltyTransactions] = useState([])
     const [loyaltyLoading, setLoyaltyLoading] = useState(false)
     const [loyaltyError, setLoyaltyError] = useState('')
+    const username = localStorage.getItem('username')
 
     const loadLoyaltyData = async () => {
         setLoyaltyLoading(true)
@@ -59,7 +60,7 @@ function Home() {
     }
 
     useEffect(() => {
-        if (activeKey === 'me') loadLoyaltyData()
+        if (activeKey === 'profile') loadLoyaltyData()
     }, [activeKey])
 
     const addToCart = (e) => {
@@ -71,7 +72,7 @@ function Home() {
         { key: 'home', title: 'Home', icon: <LayoutGrid size={22} /> },
         { key: 'menu', title: 'Menu', icon: <ListIcon size={22} /> },
         { key: 'orders', title: 'Orders', icon: <ClipboardList size={22} /> },
-        { key: 'me', title: 'Me', icon: <User size={22} /> },
+        { key: 'profile', title: 'Profile', icon: <User size={22} /> },
     ]
 
     return (
@@ -95,7 +96,7 @@ function Home() {
             </div>
 
             <div className="content-scroll">
-                {activeKey === 'me' ? (
+                {activeKey === 'profile' ? (
                     <PullToRefresh onRefresh={loadLoyaltyData}>
                         <div className="main-content">
                             <LoyaltyClubSection
@@ -104,6 +105,7 @@ function Home() {
                                 loading={loyaltyLoading}
                                 error={loyaltyError || undefined}
                                 onRefresh={loadLoyaltyData}
+                                username={username}
                             />
                             
                             <div style={{ padding: '0 16px', marginTop: 12 }}>

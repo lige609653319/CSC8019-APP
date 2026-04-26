@@ -18,6 +18,7 @@ const Login = () => {
         // Join tokenHead and token with a space if tokenHead doesn't already end with one
         const authHeader = tokenHead.endsWith(' ') ? `${tokenHead}${token}` : `${tokenHead} ${token}`;
         localStorage.setItem('token', authHeader);
+        localStorage.setItem('username', values.username);
         Toast.show({
           icon: 'success',
           content: 'Login successful',
