@@ -14,11 +14,14 @@ import {
     ShoppingCart,
     LayoutGrid,
     List as ListIcon,
-    User
+    User,
+    ClipboardList
 } from 'lucide-react'
 import { fetchLoyaltyBalance, fetchLoyaltyTransactions } from '../utils/loyaltyApi'
 import LoyaltyClubSection from '../components/LoyaltyClubSection'
 import TrainInfo from '../components/TrainInfo'
+import Orders from './Orders'
+import Menu from './Menu'
 import '../App.css'
 
 const COFFEE_DATA = [
@@ -71,6 +74,7 @@ function Home() {
     const tabs = [
         { key: 'home', title: 'Home', icon: <LayoutGrid size={22} /> },
         { key: 'menu', title: 'Menu', icon: <ListIcon size={22} /> },
+        { key: 'orders', title: 'Orders', icon: <ClipboardList size={22} /> },
         { key: 'me', title: 'Me', icon: <User size={22} /> },
     ]
 
@@ -108,6 +112,15 @@ function Home() {
                             <div style={{ height: 100 }} />
                         </div>
                     </PullToRefresh>
+                ) : activeKey === 'orders' ? (
+                    <div className="main-content">
+                        <Orders />
+                        <div style={{ height: 100 }} />
+                    </div>
+                ) : activeKey === 'menu' ? (
+                    <div className="main-content">
+                        <Menu />
+                    </div>
                 ) : (
                     <PullToRefresh onRefresh={async () => console.log('refresh')}>
                         <div className="main-content">
