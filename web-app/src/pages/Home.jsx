@@ -62,8 +62,16 @@ function Home() {
         }
     }
 
+    const handleLogout = () => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('username')
+        localStorage.removeItem('userid')
+        localStorage.removeItem('role')
+        window.location.href = '/login'
+    }
+
     useEffect(() => {
-        if (activeKey === 'me') loadLoyaltyData()
+        if (activeKey === 'profile') loadLoyaltyData()
     }, [activeKey])
 
     const addToCart = (e) => {
@@ -75,7 +83,7 @@ function Home() {
         { key: 'home', title: 'Home', icon: <LayoutGrid size={22} /> },
         { key: 'menu', title: 'Menu', icon: <ListIcon size={22} /> },
         { key: 'orders', title: 'Orders', icon: <ClipboardList size={22} /> },
-        { key: 'me', title: 'Me', icon: <User size={22} /> },
+        { key: 'profile', title: 'Profile', icon: <User size={22} /> },
     ]
 
     return (
@@ -99,7 +107,7 @@ function Home() {
             </div>
 
             <div className="content-scroll">
-                {activeKey === 'me' ? (
+                {activeKey === 'profile' ? (
                     <PullToRefresh onRefresh={loadLoyaltyData}>
                         <div className="main-content">
                             <LoyaltyClubSection
@@ -108,6 +116,7 @@ function Home() {
                                 loading={loyaltyLoading}
                                 error={loyaltyError || undefined}
                                 onRefresh={loadLoyaltyData}
+                                onLogout={handleLogout}
                             />
                             <div style={{ height: 100 }} />
                         </div>

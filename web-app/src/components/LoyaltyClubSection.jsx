@@ -1,9 +1,9 @@
 import React from 'react'
-import { Card, List, SpinLoading } from 'antd-mobile'
-import { Gift, User } from 'lucide-react'
+import { Card, List, SpinLoading, Button } from 'antd-mobile'
+import { Gift, User, LogOut } from 'lucide-react'
 import '../App.css'
 
-function LoyaltyClubSection({ balance, transactions = [], loading, error, onRefresh, username }) {
+function LoyaltyClubSection({ balance, transactions = [], loading, error, onRefresh, username, onLogout }) {
   const displayUsername = username || balance?.username || 'Member';
 
   return (
@@ -12,7 +12,7 @@ function LoyaltyClubSection({ balance, transactions = [], loading, error, onRefr
         <div style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#6F4E37', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
           <User size={32} />
         </div>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: '#333' }}>{displayUsername}</div>
           <div style={{ fontSize: 14, color: '#666' }}>Welcome back to Coffee Shop</div>
         </div>
@@ -63,6 +63,29 @@ function LoyaltyClubSection({ balance, transactions = [], loading, error, onRefr
           </>
         )}
       </Card>
+
+      <div style={{ padding: '0 16px', marginTop: 30 }}>
+        <Button 
+          block 
+          color='danger' 
+          fill='outline' 
+          onClick={onLogout}
+          style={{ 
+            borderRadius: 12, 
+            height: 50, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            gap: 8,
+            fontSize: 16,
+            fontWeight: 600,
+            borderWidth: 1.5
+          }}
+        >
+          <LogOut size={20} />
+          Logout
+        </Button>
+      </div>
     </>
   )
 }
