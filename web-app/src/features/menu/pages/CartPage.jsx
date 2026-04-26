@@ -16,11 +16,43 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
   } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCheckout = () => {
-    Toast.show({
-      content: 'This part is not your responsibility',
-      position: 'top',
-    });
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) return;
+
+    try {
+      setIsSubmitting(true);
+      const totalPrice = getTotalPrice();
+      const orderData = {
+        storeId: 1, // Using default storeId
+        totalPrice: totalPrice.toFixed(2),
+        orderType: 'DINE_IN',
+        items: getOrderItems(),
+      };
+
+      const response = await orderApi.createOrder(orderData);
+      
+      // Checking for common success patterns (200 code or just truthy response)
+      if (response && response.code === 200) {
+        Toast.show({
+          icon: 'success',
+          content: 'Order created successfully!',
+          position: 'top',
+        });
+        
+        clearCart();
+        onBack();
+      } else {
+        throw new Error(response?.message || 'Failed to create order');
+      }
+    } catch (error) {
+      Toast.show({
+        icon: 'fail',
+        content: error.message || 'Failed to create order. Please try again.',
+        position: 'top',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleRemoveItem = (menuId, skuId) => {

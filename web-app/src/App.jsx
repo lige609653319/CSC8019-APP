@@ -9,14 +9,21 @@ import './App.css'
 
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('token');
-    return token ? children : <Navigate to="/login" />;
+    const isAuthenticated = token && token.trim() !== '' && token !== 'null' && token !== 'undefined';
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+const PublicRoute = ({ children }) => {
+    const token = localStorage.getItem('token');
+    const isAuthenticated = token && token.trim() !== '' && token !== 'null' && token !== 'undefined';
+    return isAuthenticated ? <Navigate to="/" replace /> : children;
 }
 
 function App() {
     return (
         <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
             <Route
                 path="/orders"

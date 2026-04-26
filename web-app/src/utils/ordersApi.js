@@ -8,16 +8,16 @@ export const ORDER_STATUSES = ['PENDING', 'PREPARING', 'COMPLETED', 'DELIVERED',
 
 /** GET /api/orders — current user's orders (backend filters by auth token) */
 export const fetchMyOrders = (userId) =>
-    request.get(`/orders`).then((res) => res.data ?? []);
+    request.get(`/orders`).then((res) => res?.data ?? res ?? []);
 
 /** GET /api/store/list */
 export const fetchStores = () =>
-  request.get('/api/store/list').then((res) => res.data ?? []);
+  request.get('/store/list').then((res) => res?.data ?? res ?? []);
 
 /** GET /api/menu/search?storeId=X */
 export const fetchMenuByStore = (storeId) =>
-  request.get('/api/menu/search', { params: { storeId } }).then((res) => res.data ?? []);
+  request.get('/menu/search', { params: { storeId } }).then((res) => res?.data ?? res ?? []);
 
 /** POST /api/orders/create */
 export const createOrder = (payload) =>
-  request.post('/api/orders/create', payload).then((res) => res.data);
+  request.post('/orders/create', payload).then((res) => res?.data ?? res);

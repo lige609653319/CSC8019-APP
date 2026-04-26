@@ -97,7 +97,7 @@ const Orders = () => {
                                             color: '#6F4E37',
                                             fontSize: '16px'
                                         }}>
-                                            Total: ${order.totalPrice.toFixed(2)}
+                                            Total: ${(order.totalPrice || 0).toFixed(2)}
                                         </div>
                                     </Card>
                                 </List.Item>

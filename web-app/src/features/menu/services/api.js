@@ -1,5 +1,6 @@
 // API configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Using relative path to take advantage of Vite proxy in development
+const API_BASE_URL = '/api';
 
 // Helper function to get auth headers
 export const getAuthHeaders = (token) => {
@@ -117,7 +118,7 @@ export const orderApi = {
       });
       const data = await handleResponse(response, 'createOrder');
       console.log('[Order API] Order created successfully:', data);
-      return data.data;
+      return data; // Return the whole response object for more flexible handling
     } catch (error) {
       console.error('[Order API] Create order error:', error);
       throw error;

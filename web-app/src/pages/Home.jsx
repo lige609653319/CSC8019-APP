@@ -20,6 +20,7 @@ import {
 import { fetchLoyaltyBalance, fetchLoyaltyTransactions } from '../utils/loyaltyApi'
 import LoyaltyClubSection from '../components/LoyaltyClubSection'
 import Orders from './Orders'
+import Menu from './Menu'
 import '../App.css'
 
 const COFFEE_DATA = [
@@ -104,6 +105,21 @@ function Home() {
                                 error={loyaltyError || undefined}
                                 onRefresh={loadLoyaltyData}
                             />
+                            
+                            <div style={{ padding: '0 16px', marginTop: 12 }}>
+                                <Button 
+                                    block 
+                                    color='danger' 
+                                    fill='outline'
+                                    onClick={() => {
+                                        localStorage.removeItem('token');
+                                        window.location.reload();
+                                    }}
+                                >
+                                    Log Out
+                                </Button>
+                            </div>
+                            
                             <div style={{ height: 100 }} />
                         </div>
                     </PullToRefresh>
@@ -111,6 +127,10 @@ function Home() {
                     <div className="main-content">
                         <Orders />
                         <div style={{ height: 100 }} />
+                    </div>
+                ) : activeKey === 'menu' ? (
+                    <div className="main-content">
+                        <Menu />
                     </div>
                 ) : (
                     <PullToRefresh onRefresh={async () => console.log('refresh')}>
@@ -132,9 +152,9 @@ function Home() {
                                 </div>
                             </Card>
 
-                            <h2 className="section-title">Menu</h2>
+                            <h2 className="section-title">Quick Picks</h2>
                             <List className="coffee-list">
-                                {COFFEE_DATA.map(coffee => (
+                                {COFFEE_DATA.slice(0, 3).map(coffee => (
                                     <List.Item
                                         key={coffee.id}
                                         prefix={
