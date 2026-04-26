@@ -10,13 +10,16 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.1",
     "@ant-design/icons-react-native": "^2.3.2",
     "@ant-design/react-native": "^5.4.3",
     "@expo/vector-icons": "^15.1.1",
+    "antd": "^6.3.6",
     "expo": "~55.0.3",
     "expo-font": "^55.0.4",
     "expo-status-bar": "~55.0.4",
-    "react": "19.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-native": "0.83.2",
     "react-native-webview": "^13.13.1"
   },
