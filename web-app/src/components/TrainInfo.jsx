@@ -40,7 +40,8 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
         if (!stationName) return false;
         if (stationName === 'Unknown') return false;
         if (stationName.startsWith('Station ')) return false;
-        if (/^[A-Z0-9]{5,}$/.test(stationName)) return false;
+        if (/^[0-9]{5,}$/.test(stationName)) return false;
+        if (/^[A-Z0-9]{8,}$/.test(stationName)) return false;
         return true;
     };
 
@@ -56,8 +57,13 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
             }
 
             const validTrains = data.filter(train => {
-                const hasArrivalTime = train.scheduledArrivalTime || train.estimatedArrivalTime;
+                const hasArrivalTime =
+                    train.scheduledArrivalTime ||
+                    train.estimatedArrivalTime ||
+                    train.actualArrivalTime;
+
                 const isValidStation = isValidStationName(train.currentStation);
+
                 return hasArrivalTime && isValidStation;
             });
 
@@ -76,11 +82,36 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
             setLastUpdated(new Date().toLocaleTimeString());
 
             const total = sortedData.length;
-            const arrived = sortedData.filter(t => t.actualArrivalTime || t.status === 'ARRIVED').length;
-            const onTime = sortedData.filter(t => t.status === 'ON_TIME').length;
-            const delayed = sortedData.filter(t => t.status === 'DELAYED').length;
-            const cancelled = sortedData.filter(t => t.status === 'CANCELLED').length;
-            setStats({ total, onTime, delayed, cancelled, arrived });
+
+            let onTime = 0;
+            let delayed = 0;
+            let cancelled = 0;
+            let early = 0;
+
+            sortedData.forEach(train => {
+                const statusText = getStatusText(train);
+
+                const scheduled = new Date(train.scheduledArrivalTime);
+                const actual = train.actualArrivalTime ? new Date(train.actualArrivalTime) : null;
+
+                if (actual && scheduled && actual < scheduled) {
+                    early++;
+                } else if (statusText.startsWith('Delayed')) {
+                    delayed++;
+                } else if (statusText === 'Cancelled') {
+                    cancelled++;
+                } else {
+                    onTime++;
+                }
+            });
+
+            setStats({
+                total,
+                onTime,
+                delayed,
+                cancelled,
+                arrived: early
+            });
         } catch (err) {
             console.error('Failed to fetch train data:', err);
             setError('Failed to fetch train data');
@@ -109,8 +140,8 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
     }, [visible, fetchTrains]);
 
     const getStatusColor = (record) => {
-        if (record.actualArrivalTime || record.status === 'ARRIVED') return '#52c41a';
         switch (record.status) {
+            case 'ARRIVED': return '#52c41a';
             case 'ON_TIME': return '#52c41a';
             case 'DELAYED': return '#faad14';
             case 'CANCELLED': return '#ff4d4f';
@@ -119,12 +150,17 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
     };
 
     const getStatusText = (record) => {
-        if (record.actualArrivalTime || record.status === 'ARRIVED') return 'Arrived';
         switch (record.status) {
-            case 'ON_TIME': return 'On Time';
-            case 'DELAYED': return `Delayed ${record.delayMinutes || ''}min`;
-            case 'CANCELLED': return 'Cancelled';
-            default: return record.status || 'Unknown';
+            case 'ARRIVED':
+                return 'Arrived';
+            case 'ON_TIME':
+                return 'On Time';
+            case 'DELAYED':
+                return `Delayed ${record.delayMinutes || ''}min`;
+            case 'CANCELLED':
+                return 'Cancelled';
+            default:
+                return record.status || 'Unknown';
         }
     };
 
@@ -214,7 +250,7 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
                     </div>
                     <div style={{...styles.statCard, borderBottomColor: '#52c41a'}}>
                         <div style={{...styles.statValue, color: '#52c41a'}}>{stats.arrived}</div>
-                        <div style={styles.statLabel}>Arrived</div>
+                        <div style={styles.statLabel}>Early</div>
                     </div>
                 </div>
 
