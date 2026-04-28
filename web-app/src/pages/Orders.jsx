@@ -56,7 +56,7 @@ const Orders = () => {
                                             marginBottom: '4px'
                                         }}>
                                             <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>
-                                                Order #{order.id}
+                                                Order
                                             </span>
 
                                             {/* Spacing between ID and Tag */}
