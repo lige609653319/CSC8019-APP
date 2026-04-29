@@ -142,8 +142,6 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-  height: 100%;
 }
 
 .category-item {
@@ -296,12 +294,11 @@
 
 .detail-container {
   flex: 1;
-  overflow: hidden;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: calc(100vh - 110px);
+  overflow-y: auto;
 }
 
 .detail-image {
