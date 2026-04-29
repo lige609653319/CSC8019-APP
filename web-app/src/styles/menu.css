@@ -142,6 +142,8 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
+  height: 100%;
 }
 
 .category-item {
@@ -178,7 +180,7 @@
 .menu-list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 12px 0px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -294,11 +296,12 @@
 
 .detail-container {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: calc(100vh - 110px);
 }
 
 .detail-image {
