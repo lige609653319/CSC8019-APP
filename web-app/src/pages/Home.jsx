@@ -36,6 +36,7 @@ const COFFEE_DATA = [
 function Home() {
     const [activeKey, setActiveKey] = useState('home')
     const [menuCurrentPage, setMenuCurrentPage] = useState('menu')
+    const [cartClickCount, setCartClickCount] = useState(0)  // Add trigger for cart clicks
     const [selectedMenu, setSelectedMenu] = useState(null)
     const [loyaltyBalance, setLoyaltyBalance] = useState(null)
     const [loyaltyTransactions, setLoyaltyTransactions] = useState([])
@@ -78,6 +79,7 @@ function Home() {
     const handleCartClick = () => {
         setActiveKey('menu')
         setMenuCurrentPage('cart')
+        setCartClickCount(prev => prev + 1)  // Trigger cart update
     }
 
     const tabs = [
@@ -129,7 +131,7 @@ function Home() {
                     </div>
                 ) : activeKey === 'menu' ? (
                     <div className="main-content">
-                        <Menu initialPage={menuCurrentPage} />
+                        <Menu initialPage={menuCurrentPage} cartClickTrigger={cartClickCount} />
                     </div>
                 ) : (
                     <PullToRefresh onRefresh={async () => console.log('refresh')}>
