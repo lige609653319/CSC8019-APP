@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import {
     NavBar,
-    SearchBar,
+    // SearchBar,
     Card,
     Button,
     Badge,
@@ -103,9 +103,9 @@ function Home() {
                 <span style={{ fontWeight: 'bold', color: '#6F4E37' }}>Coffee Client</span>
             </NavBar>
 
-            <div className="search-wrapper">
+            {/* <div className="search-wrapper">
                 <SearchBar placeholder='Search for coffee...' showCancelButton />
-            </div>
+            </div> */}
 
             <div className="content-scroll">
                 {activeKey === 'profile' ? (

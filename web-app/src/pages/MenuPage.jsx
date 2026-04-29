@@ -23,34 +23,26 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [searchLoading, setSearchLoading] = useState(false);
     const { getTotalCount, getTotalPrice } = useCart();
-    
+
     const handleImageError = (menuId) => {
         setImageErrors(prev => ({ ...prev, [menuId]: true }));
     };
 
     const handleSearch = async (value) => {
         setSearchInput(value);
-        
+
         if (!value.trim()) {
             setSearchResults([]);
             setShowSearchResults(false);
             return;
         }
 
-        try {
-            setSearchLoading(true);
-            const results = await menuApi.searchMenus(STORE_ID, value.trim());
-            setSearchResults(results || []);
-            setShowSearchResults(true);
-        } catch (error) {
-            console.error('Search error:', error);
-            Toast.show({
-                content: 'Search failed',
-                position: 'top',
-            });
-        } finally {
-            setSearchLoading(false);
-        }
+        const results = menus.filter(item =>
+            item.name.toLowerCase().includes(value.trim().toLowerCase())
+        );
+
+        setSearchResults(results);
+        setShowSearchResults(true);
     };
 
     const handleSelectSearchResult = (menu) => {
@@ -181,15 +173,15 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                             </div>
                         ) : (
                             searchResults.map(item => (
-                                <div 
-                                    key={item.id} 
+                                <div
+                                    key={item.id}
                                     className="search-result-item"
                                     onClick={() => handleSelectSearchResult(item)}
                                 >
                                     <div className="search-result-image">
                                         {item.imageUrl && !imageErrors[`search-${item.id}`] ? (
-                                            <img 
-                                                src={item.imageUrl} 
+                                            <img
+                                                src={item.imageUrl}
                                                 alt={item.name}
                                                 onError={() => setImageErrors(prev => ({ ...prev, [`search-${item.id}`]: true }))}
                                             />
@@ -249,9 +241,9 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                             >
                                 <div className="menu-card-content">
                                     {menu.imageUrl && !imageErrors[menu.id] ? (
-                                        <img 
-                                            src={menu.imageUrl} 
-                                            alt={menu.name} 
+                                        <img
+                                            src={menu.imageUrl}
+                                            alt={menu.name}
                                             className="menu-image"
                                             onError={() => handleImageError(menu.id)}
                                         />
