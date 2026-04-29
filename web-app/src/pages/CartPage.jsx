@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { NavBar, Button, Card, Stepper, Toast, Dialog } from 'antd-mobile';
-import { ChevronLeft, Trash2 } from 'lucide-react';
+import { NavBar, Button, Card, Stepper, Toast } from 'antd-mobile';
+import { Trash2 } from 'lucide-react';
 import { useCart } from './CartContext';
 import { createOrder } from '../utils/ordersApi';
 import '../styles/menu.css';
@@ -32,25 +32,32 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
         getOrderItems,
         getSelectedTrain,
     } = useCart();
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const selectedTrain = getSelectedTrain();
 
     const handleCheckout = async () => {
-        if (cartItems.length === 0) return;
+        if (cartItems.length === 0) {
+            return;
+        }
 
         try {
             setIsSubmitting(true);
+
             const totalPrice = getTotalPrice();
+            const selectedStoreId = Number(localStorage.getItem('selectedStoreId')) || 1;
+
             const orderData = {
-                storeId: 1,
+                storeId: selectedStoreId,
                 totalPrice: totalPrice.toFixed(2),
                 orderType: 'DINE_IN',
                 items: getOrderItems(),
             };
 
+            console.log('[Cart] Creating order with data:', orderData);
+
             const response = await createOrder(orderData);
 
-            // createOrder returns the created order data on success
             if (response) {
                 Toast.show({
                     icon: 'success',
@@ -76,6 +83,7 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
 
     const handleRemoveItem = (menuId, skuId) => {
         removeFromCart(menuId, skuId);
+
         Toast.show({
             content: 'Item removed',
             position: 'top',
@@ -86,9 +94,7 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
 
     return (
         <div className="cart-page">
-            <NavBar
-                onBack={onBack}
-            >
+            <NavBar onBack={onBack}>
                 Cart
             </NavBar>
 
@@ -105,9 +111,15 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                         {/* Cart Items */}
                         <div className="cart-items">
                             {cartItems.map(item => (
-                                <Card key={`${item.menuId}-${item.skuId}`} className="cart-item-card">
+                                <Card
+                                    key={`${item.menuId}-${item.skuId}`}
+                                    className="cart-item-card"
+                                >
                                     <div className="cart-item-content">
-                                        <CartItemImage imageUrl={item.imageUrl} menuName={item.menuName} />
+                                        <CartItemImage
+                                            imageUrl={item.imageUrl}
+                                            menuName={item.menuName}
+                                        />
 
                                         <div className="item-details">
                                             <div className="item-name">{item.menuName}</div>
@@ -125,6 +137,7 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                                                 max={99}
                                                 size="small"
                                             />
+
                                             <Button
                                                 color="danger"
                                                 fill="text"
@@ -139,7 +152,8 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                                     </div>
 
                                     <div className="item-total">
-                                        Total: £{(parseFloat(item.price) * item.quantity).toFixed(2)}
+                                        Total: £
+                                        {(parseFloat(item.price) * item.quantity).toFixed(2)}
                                     </div>
                                 </Card>
                             ))}
@@ -151,42 +165,97 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                                 <span>Subtotal</span>
                                 <span>£{totalPrice.toFixed(2)}</span>
                             </div>
+
                             <div className="summary-row">
                                 <span>Delivery</span>
                                 <span>£0.00</span>
                             </div>
+
                             <div className="summary-row total">
                                 <span>Total</span>
                                 <span>£{totalPrice.toFixed(2)}</span>
                             </div>
                         </Card>
 
-                        {/* Train Information Card - between Total Price and Checkout */}
+                        {/* Train Information Card */}
                         {selectedTrain && (
-                            <Card className="train-info-summary" style={{ textAlign: 'center', padding: '16px' }}>
-                                <div className="train-info-header" style={{ marginBottom: '12px' }}>
-                                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#6F4E37' }}>🚂 Train Order</span>
+                            <Card
+                                className="train-info-summary"
+                                style={{ textAlign: 'center', padding: '16px' }}
+                            >
+                                <div
+                                    className="train-info-header"
+                                    style={{ marginBottom: '12px' }}
+                                >
+                                    <span
+                                        style={{
+                                            fontSize: '16px',
+                                            fontWeight: 'bold',
+                                            color: '#6F4E37',
+                                        }}
+                                    >
+                                        🚂 Train Order
+                                    </span>
                                 </div>
+
                                 <div className="train-info-details">
-                                    <div className="train-info-row" style={{ marginBottom: '8px' }}>
-                                        <span style={{ fontSize: '14px', color: '#666' }}>Train ID: </span>
-                                        <span style={{ fontSize: '14px' }}>{selectedTrain.trainId}</span>
+                                    <div
+                                        className="train-info-row"
+                                        style={{ marginBottom: '8px' }}
+                                    >
+                                        <span style={{ fontSize: '14px', color: '#666' }}>
+                                            Train ID:{' '}
+                                        </span>
+                                        <span style={{ fontSize: '14px' }}>
+                                            {selectedTrain.trainId}
+                                        </span>
                                     </div>
-                                    <div className="train-info-row" style={{ marginBottom: '8px' }}>
-                                        <span style={{ fontSize: '14px', color: '#666' }}>Station: </span>
-                                        <span style={{ fontSize: '14px' }}>{selectedTrain.currentStation}</span>
+
+                                    <div
+                                        className="train-info-row"
+                                        style={{ marginBottom: '8px' }}
+                                    >
+                                        <span style={{ fontSize: '14px', color: '#666' }}>
+                                            Station:{' '}
+                                        </span>
+                                        <span style={{ fontSize: '14px' }}>
+                                            {selectedTrain.currentStation}
+                                        </span>
                                     </div>
-                                    <div className="train-info-row" style={{ marginBottom: '8px' }}>
-                                        <span style={{ fontSize: '14px', color: '#666' }}>Arrival Time: </span>
-                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a' }}>
+
+                                    <div
+                                        className="train-info-row"
+                                        style={{ marginBottom: '8px' }}
+                                    >
+                                        <span style={{ fontSize: '14px', color: '#666' }}>
+                                            Arrival Time:{' '}
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontSize: '20px',
+                                                fontWeight: 'bold',
+                                                color: '#52c41a',
+                                            }}
+                                        >
                                             {selectedTrain.arrivalTime
-                                                ? new Date(selectedTrain.arrivalTime).toLocaleTimeString('en-GB', { hour12: false })
+                                                ? new Date(selectedTrain.arrivalTime)
+                                                    .toLocaleTimeString('en-GB', {
+                                                        hour12: false,
+                                                    })
                                                 : '--'}
                                         </span>
                                     </div>
-                                    <div className="train-info-row" style={{ marginBottom: '8px' }}>
-                                        <span style={{ fontSize: '14px', color: '#666' }}>Platform: </span>
-                                        <span style={{ fontSize: '14px' }}>{selectedTrain.platform || 'TBC'}</span>
+
+                                    <div
+                                        className="train-info-row"
+                                        style={{ marginBottom: '8px' }}
+                                    >
+                                        <span style={{ fontSize: '14px', color: '#666' }}>
+                                            Platform:{' '}
+                                        </span>
+                                        <span style={{ fontSize: '14px' }}>
+                                            {selectedTrain.platform || 'TBC'}
+                                        </span>
                                     </div>
                                 </div>
                             </Card>

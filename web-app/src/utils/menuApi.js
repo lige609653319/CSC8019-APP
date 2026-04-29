@@ -7,10 +7,12 @@ export const getAuthHeaders = (token) => {
   const headers = {
     'Content-Type': 'application/json',
   };
+
   if (token) {
     // Token already includes "Bearer " prefix from login, so use directly
     headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
   }
+
   return headers;
 };
 
@@ -25,21 +27,62 @@ const handleResponse = async (response, endpoint) => {
     });
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
+
   return response.json();
+};
+
+const imageMap = {
+  'Americano': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Americano.png',
+  'Americano with milk': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/AmericanoWithMilk.png',
+  'Cappuccino': 'https://github.com/lige609653319/CSC8019-APP/blob/master/web-app/src/img/Cappuccino.png?raw=true',
+  'Latte': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Latte.png',
+  'Mocha': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Mocha.png',
+  'Hot Chocolate': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Chocolate.png',
+  'Mineral Water': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Water.png',
+};
+
+const addMenuImages = (menus = []) => {
+  return menus.map(item => ({
+    ...item,
+    imageUrl: imageMap[item.name] || null,
+  }));
 };
 
 // Store API
 export const storeApi = {
+  // Get all stores
+  getStores: async () => {
+    try {
+      console.log('[Store API] Fetching store list');
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${API_BASE_URL}/store/list`, {
+        headers: getAuthHeaders(token),
+      });
+
+      const data = await handleResponse(response, 'getStores');
+      console.log('[Store API] Store list success:', data);
+
+      return data.data || [];
+    } catch (error) {
+      console.error('[Store API] Store list error:', error);
+      throw error;
+    }
+  },
+
   // Get store by ID
   getStoreById: async (storeId = 1) => {
     try {
       console.log(`[Store API] Fetching store: ${storeId}`);
       const token = localStorage.getItem('token');
+
       const response = await fetch(`${API_BASE_URL}/store/${storeId}`, {
-        headers: getAuthHeaders(token)
+        headers: getAuthHeaders(token),
       });
+
       const data = await handleResponse(response, 'getStoreById');
       console.log('[Store API] Success:', data);
+
       return data.data;
     } catch (error) {
       console.error('[Store API] Error:', error);
@@ -55,26 +98,17 @@ export const menuApi = {
     try {
       console.log(`[Menu API] Fetching menus for storeId: ${storeId}`);
       const token = localStorage.getItem('token');
+
       const response = await fetch(`${API_BASE_URL}/menu/search?storeId=${storeId}`, {
-        headers: getAuthHeaders(token)
+        headers: getAuthHeaders(token),
       });
+
       const data = await handleResponse(response, 'getMenusByStore');
-      const imageMap = {
-        'Americano': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Americano.png',
-        'Americano with milk': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/AmericanoWithMilk.png',
-        'Cappuccino': 'https://github.com/lige609653319/CSC8019-APP/blob/master/web-app/src/img/Cappuccino.png?raw=true',
-        'Latte': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Latte.png',
-        'Mocha': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Mocha.png',
-        'Hot Chocolate': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Chocolate.png',
-        'Mineral Water': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Water.png',
-      };
-      const menusWithImages = (data.data || []).map(item => ({
-        ...item,
-        imageUrl: imageMap[item.name] || null // 将图片地址存入 imageUrl 字段
-      }));
+      const menusWithImages = addMenuImages(data.data || []);
+
       console.log('[Menu API] Processed Data with Images:', menusWithImages);
+
       return menusWithImages;
-      // return data.data || [];
     } catch (error) {
       console.error('[Menu API] Error:', error);
       throw error;
@@ -85,28 +119,25 @@ export const menuApi = {
   searchMenus: async (storeId = 1, name, category) => {
     try {
       const params = new URLSearchParams({ storeId });
-      if (name) params.append('name', name);
-      if (category) params.append('category', category);
+
+      if (name) {
+        params.append('name', name);
+      }
+
+      if (category) {
+        params.append('category', category);
+      }
 
       console.log(`[Menu API] Searching menus: ${params.toString()}`);
       const token = localStorage.getItem('token');
+
       const response = await fetch(`${API_BASE_URL}/menu/search?${params}`, {
-        headers: getAuthHeaders(token)
+        headers: getAuthHeaders(token),
       });
+
       const data = await handleResponse(response, 'searchMenus');
-      const imageMap = {
-        'Americano': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Americano.png',
-        'Americano with milk': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/AmericanoWithMilk.png',
-        'Cappuccino': 'https://github.com/lige609653319/CSC8019-APP/blob/master/web-app/src/img/Cappuccino.png?raw=true',
-        'Latte': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Latte.png',
-        'Mocha': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Mocha.png',
-        'Hot Chocolate': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Chocolate.png',
-        'Mineral Water': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Water.png',
-      };
-      const searchResultsWithImages = (data.data || []).map(item => ({
-        ...item,
-        imageUrl: imageMap[item.name] || null
-      }));
+      const searchResultsWithImages = addMenuImages(data.data || []);
+
       return searchResultsWithImages;
     } catch (error) {
       console.error('[Menu API] Search error:', error);
@@ -119,10 +150,13 @@ export const menuApi = {
     try {
       console.log(`[Menu API] Fetching menu: ${id}`);
       const token = localStorage.getItem('token');
+
       const response = await fetch(`${API_BASE_URL}/menu/${id}`, {
-        headers: getAuthHeaders(token)
+        headers: getAuthHeaders(token),
       });
+
       const data = await handleResponse(response, 'getMenuById');
+
       return data.data;
     } catch (error) {
       console.error('[Menu API] Get by ID error:', error);

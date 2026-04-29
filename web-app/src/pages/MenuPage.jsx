@@ -1,17 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { NavBar, Card, Button, Tag, Skeleton, Empty, Toast, Input } from 'antd-mobile';
-import { ShoppingCart, Train, Search, X } from 'lucide-react';
+import {
+    NavBar,
+    Card,
+    Button,
+    Tag,
+    Skeleton,
+    Empty,
+    Toast,
+    Input,
+    Popup,
+    List,
+    Dialog,
+} from 'antd-mobile';
+import { ShoppingCart, Train, Search, X, MapPin, ChevronDown } from 'lucide-react';
 import { menuApi, storeApi } from '../utils/menuApi';
 import { useCart } from './CartContext';
 import TrainInfo from '../components/TrainInfo';
 import '../styles/menu.css';
 
 const CATEGORIES = ['COFFEE', 'CHOCOLATE', 'WATER'];
-const STORE_ID = 1;
+const DEFAULT_STORE_ID = 1;
 
 export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
+    const savedStoreId = Number(localStorage.getItem('selectedStoreId')) || DEFAULT_STORE_ID;
+
     const [menus, setMenus] = useState([]);
+    const [stores, setStores] = useState([]);
     const [store, setStore] = useState(null);
+    const [selectedStoreId, setSelectedStoreId] = useState(savedStoreId);
+    const [storePopupVisible, setStorePopupVisible] = useState(false);
+
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('COFFEE');
     const [error, setError] = useState(null);
@@ -22,7 +40,13 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [searchLoading, setSearchLoading] = useState(false);
-    const { getTotalCount, getTotalPrice } = useCart();
+
+    const {
+        cartItems,
+        clearCart,
+        getTotalCount,
+        getTotalPrice,
+    } = useCart();
 
     const handleImageError = (menuId) => {
         setImageErrors(prev => ({ ...prev, [menuId]: true }));
@@ -59,19 +83,60 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
     };
 
     useEffect(() => {
-        loadData();
+        loadStores();
     }, []);
 
-    const loadData = async () => {
+    useEffect(() => {
+        if (selectedStoreId) {
+            loadData(selectedStoreId);
+        }
+    }, [selectedStoreId]);
+
+    const loadStores = async () => {
+        try {
+            const storeList = await storeApi.getStores();
+
+            const activeStores = storeList.filter(item =>
+                !item.status || item.status === 'ACTIVE'
+            );
+
+            setStores(activeStores);
+
+            if (activeStores.length > 0) {
+                const currentStoreExists = activeStores.some(
+                    item => Number(item.id) === Number(selectedStoreId)
+                );
+
+                if (!currentStoreExists) {
+                    const firstStoreId = activeStores[0].id;
+                    setSelectedStoreId(firstStoreId);
+                    localStorage.setItem('selectedStoreId', String(firstStoreId));
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load stores:', error);
+            Toast.show({
+                content: 'Failed to load stores.',
+                position: 'top',
+            });
+        }
+    };
+
+    const loadData = async (storeId) => {
         try {
             setLoading(true);
             setError(null);
+
+            clearSearch();
+
             const [storeData, menuData] = await Promise.all([
-                storeApi.getStoreById(STORE_ID),
-                menuApi.getMenusByStore(STORE_ID),
+                storeApi.getStoreById(storeId),
+                menuApi.getMenusByStore(storeId),
             ]);
+
             setStore(storeData);
             setMenus(menuData);
+            setImageErrors({});
         } catch (error) {
             console.error('Failed to load data:', error);
             setError(error.message);
@@ -82,6 +147,38 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const switchStore = (newStoreId) => {
+        setSelectedStoreId(newStoreId);
+        localStorage.setItem('selectedStoreId', String(newStoreId));
+        setStorePopupVisible(false);
+        setSelectedCategory('COFFEE');
+    };
+
+    const handleStoreSelect = (newStore) => {
+        const newStoreId = newStore.id;
+
+        if (Number(newStoreId) === Number(selectedStoreId)) {
+            setStorePopupVisible(false);
+            return;
+        }
+
+        if (cartItems.length > 0) {
+            Dialog.confirm({
+                title: 'Switch store?',
+                content: 'Changing store will clear your current cart. Do you want to continue?',
+                confirmText: 'Switch',
+                cancelText: 'Cancel',
+                onConfirm: () => {
+                    clearCart();
+                    switchStore(newStoreId);
+                },
+            });
+            return;
+        }
+
+        switchStore(newStoreId);
     };
 
     const filteredMenus = menus.filter(menu => menu.category === selectedCategory);
@@ -95,6 +192,18 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
         return labels[category] || category;
     };
 
+    const getStoreDisplayName = (storeItem) => {
+        if (!storeItem) {
+            return 'Choose store';
+        }
+
+        if (storeItem.locationName) {
+            return `${storeItem.name} - ${storeItem.locationName}`;
+        }
+
+        return storeItem.name || 'Whistlestop Coffee Hut';
+    };
+
     const handleStationSelect = (station) => {
         setSelectedStation(station);
         Toast.show({
@@ -104,7 +213,7 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
         });
     };
 
-    const storeName = store?.name || 'Whistlestop Coffee Hut';
+    const storeName = getStoreDisplayName(store);
     const displayStation = selectedStation || 'Choose your station';
 
     return (
@@ -127,19 +236,41 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                     <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>
                         Whistlestop Coffee Hut
                     </span>
+
+                    <div
+                        onClick={() => setStorePopupVisible(true)}
+                        style={{
+                            fontSize: '13px',
+                            color: '#6F4E37',
+                            cursor: 'pointer',
+                            marginTop: '3px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            maxWidth: '260px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        <MapPin size={14} />
+                        <span>{storeName}</span>
+                        <ChevronDown size={14} />
+                    </div>
+
                     <div
                         onClick={() => setTrainModalVisible(true)}
                         style={{
-                            fontSize: '14px',
+                            fontSize: '13px',
                             color: '#1890ff',
                             cursor: 'pointer',
                             marginTop: '2px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px'
+                            gap: '4px',
                         }}
                     >
-                        📍 {displayStation}
+                        🚆 {displayStation}
                     </div>
                 </div>
             </NavBar>
@@ -156,7 +287,12 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                         style={{ flex: 1, marginLeft: '8px' }}
                     />
                     {searchInput && (
-                        <X size={18} color="#999" onClick={clearSearch} style={{ cursor: 'pointer' }} />
+                        <X
+                            size={18}
+                            color="#999"
+                            onClick={clearSearch}
+                            style={{ cursor: 'pointer' }}
+                        />
                     )}
                 </div>
 
@@ -183,7 +319,12 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                                             <img
                                                 src={item.imageUrl}
                                                 alt={item.name}
-                                                onError={() => setImageErrors(prev => ({ ...prev, [`search-${item.id}`]: true }))}
+                                                onError={() =>
+                                                    setImageErrors(prev => ({
+                                                        ...prev,
+                                                        [`search-${item.id}`]: true,
+                                                    }))
+                                                }
                                             />
                                         ) : (
                                             <div style={{ fontSize: '20px' }}>☕</div>
@@ -207,8 +348,7 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                     {CATEGORIES.map(category => (
                         <div
                             key={category}
-                            className={`category-item ${selectedCategory === category ? 'active' : ''
-                                }`}
+                            className={`category-item ${selectedCategory === category ? 'active' : ''}`}
                             onClick={() => setSelectedCategory(category)}
                         >
                             {getCategoryLabel(category)}
@@ -222,12 +362,17 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                             <div className="error-content">
                                 <div className="error-icon">⚠️</div>
                                 <div>{error}</div>
-                                <Button color="primary" size="small" onClick={loadData}>
+                                <Button
+                                    color="primary"
+                                    size="small"
+                                    onClick={() => loadData(selectedStoreId)}
+                                >
                                     Retry
                                 </Button>
                             </div>
                         </Card>
                     )}
+
                     {loading ? (
                         <Skeleton animated paragraph={{ rows: 3 }} />
                     ) : filteredMenus.length === 0 ? (
@@ -253,7 +398,9 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                                     <div className="menu-info">
                                         <div className="menu-name">{menu.name}</div>
                                         <div className="menu-category">
-                                            <Tag color="default">{getCategoryLabel(menu.category)}</Tag>
+                                            <Tag color="default">
+                                                {getCategoryLabel(menu.category)}
+                                            </Tag>
                                         </div>
                                         <div className="menu-bottom">
                                             <div className="menu-price">
@@ -278,6 +425,64 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                     )}
                 </div>
             </div>
+
+            <Popup
+                visible={storePopupVisible}
+                onMaskClick={() => setStorePopupVisible(false)}
+                bodyStyle={{
+                    borderTopLeftRadius: '16px',
+                    borderTopRightRadius: '16px',
+                    minHeight: '260px',
+                }}
+            >
+                <div style={{ padding: '16px' }}>
+                    <div
+                        style={{
+                            fontSize: '18px',
+                            fontWeight: 'bold',
+                            marginBottom: '12px',
+                            color: '#6F4E37',
+                        }}
+                    >
+                        Choose store
+                    </div>
+
+                    {stores.length === 0 ? (
+                        <Empty description="No stores available" />
+                    ) : (
+                        <List>
+                            {stores.map(item => (
+                                <List.Item
+                                    key={item.id}
+                                    onClick={() => handleStoreSelect(item)}
+                                    extra={
+                                        Number(item.id) === Number(selectedStoreId)
+                                            ? 'Selected'
+                                            : ''
+                                    }
+                                >
+                                    <div>
+                                        <div style={{ fontWeight: 600 }}>
+                                            {getStoreDisplayName(item)}
+                                        </div>
+                                        {item.code && (
+                                            <div
+                                                style={{
+                                                    fontSize: '12px',
+                                                    color: '#999',
+                                                    marginTop: '3px',
+                                                }}
+                                            >
+                                                Store code: {item.code}
+                                            </div>
+                                        )}
+                                    </div>
+                                </List.Item>
+                            ))}
+                        </List>
+                    )}
+                </div>
+            </Popup>
 
             <TrainInfo
                 visible={trainModalVisible}
