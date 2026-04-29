@@ -59,8 +59,22 @@ export const menuApi = {
         headers: getAuthHeaders(token)
       });
       const data = await handleResponse(response, 'getMenusByStore');
-      console.log('[Menu API] Success:', data);
-      return data.data || [];
+      const imageMap = {
+        'Americano': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Americano.png',
+        'Americano with milk': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/AmericanoWithMilk.png',
+        'Cappuccino': 'https://github.com/lige609653319/CSC8019-APP/blob/master/web-app/src/img/Cappuccino.png?raw=true',
+        'Latte': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Latte.png',
+        'Mocha': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Mocha.png',
+        'Hot Chocolate': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Chocolate.png',
+        'Mineral Water': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Water.png',
+      };
+      const menusWithImages = (data.data || []).map(item => ({
+        ...item,
+        imageUrl: imageMap[item.name] || null // 将图片地址存入 imageUrl 字段
+      }));
+      console.log('[Menu API] Processed Data with Images:', menusWithImages);
+      return menusWithImages;
+      // return data.data || [];
     } catch (error) {
       console.error('[Menu API] Error:', error);
       throw error;
@@ -73,7 +87,7 @@ export const menuApi = {
       const params = new URLSearchParams({ storeId });
       if (name) params.append('name', name);
       if (category) params.append('category', category);
-      
+
       console.log(`[Menu API] Searching menus: ${params.toString()}`);
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/menu/search?${params}`, {

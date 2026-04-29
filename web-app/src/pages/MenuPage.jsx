@@ -17,7 +17,12 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
     const [error, setError] = useState(null);
     const [trainModalVisible, setTrainModalVisible] = useState(false);
     const [selectedStation, setSelectedStation] = useState('');
+    const [imageErrors, setImageErrors] = useState({});
     const { getTotalCount, getTotalPrice } = useCart();
+    
+    const handleImageError = (menuId) => {
+        setImageErrors(prev => ({ ...prev, [menuId]: true }));
+    };
 
     useEffect(() => {
         loadData();
@@ -97,8 +102,8 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                                     alignItems: 'center',
                                     justifyContent: 'center'
                                 }}>
-                        {getTotalCount()}
-                    </span>
+                                    {getTotalCount()}
+                                </span>
                             )}
                         </div>
                     </div>
@@ -106,9 +111,9 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                 back={null}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>
-            Whistlestop Coffee Hut
-        </span>
+                    <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>
+                        Whistlestop Coffee Hut
+                    </span>
                     <div
                         onClick={() => setTrainModalVisible(true)}
                         style={{
@@ -131,9 +136,8 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                     {CATEGORIES.map(category => (
                         <div
                             key={category}
-                            className={`category-item ${
-                                selectedCategory === category ? 'active' : ''
-                            }`}
+                            className={`category-item ${selectedCategory === category ? 'active' : ''
+                                }`}
                             onClick={() => setSelectedCategory(category)}
                         >
                             {getCategoryLabel(category)}
@@ -165,9 +169,16 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                                 onClick={() => onSelectMenu(menu)}
                             >
                                 <div className="menu-card-content">
-                                    <div className="menu-image-placeholder">
+                                    {menu.imageUrl && !imageErrors[menu.id] ? (
+                                        <img 
+                                            src={menu.imageUrl} 
+                                            alt={menu.name} 
+                                            className="menu-image"
+                                            onError={() => handleImageError(menu.id)}
+                                        />
+                                    ) : (
                                         <div className="placeholder-icon">☕</div>
-                                    </div>
+                                    )}
                                     <div className="menu-info">
                                         <div className="menu-name">{menu.name}</div>
                                         <div className="menu-category">

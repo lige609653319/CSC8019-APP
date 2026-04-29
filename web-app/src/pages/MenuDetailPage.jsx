@@ -7,7 +7,12 @@ import '../styles/menu.css';
 export const MenuDetailPage = ({ menu, onBack }) => {
   const [selectedSku, setSelectedSku] = useState(menu.skus?.[0] || null);
   const [quantity, setQuantity] = useState(1);
+  const [imageError, setImageError] = useState(false);
   const { addToCart } = useCart();
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
 
   const handleAddToCart = () => {
     if (!selectedSku) {
@@ -23,7 +28,7 @@ export const MenuDetailPage = ({ menu, onBack }) => {
       content: 'Added to cart',
       position: 'top',
     });
-    
+
     // Reset and close after a short delay
     setTimeout(() => {
       setQuantity(1);
@@ -50,9 +55,18 @@ export const MenuDetailPage = ({ menu, onBack }) => {
 
       <div className="detail-container">
         {/* Product Image Placeholder */}
-        <div className="detail-image-placeholder">
-          <div className="placeholder-icon-large">☕</div>
-        </div>
+        {menu.imageUrl && !imageError ? (
+          <img 
+            src={menu.imageUrl} 
+            alt={menu.name} 
+            className="detail-image"
+            onError={handleImageError}
+          />
+        ) : (
+          <div className="detail-image-placeholder">
+            <div className="placeholder-icon-large">☕</div>
+          </div>
+        )}
 
         {/* Product Info */}
         <Card className="detail-info-card">
