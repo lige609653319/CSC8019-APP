@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { NavBar, Button, Card, Stepper, Toast } from 'antd-mobile';
+import { NavBar, Button, Card, Stepper, Toast, Dialog } from 'antd-mobile';
 import { ChevronLeft, Trash2 } from 'lucide-react';
-import { useCart } from '../../../shared/context/CartContext';
-import { orderApi } from '../services/api';
+import { useCart } from './CartContext';
+import { createOrder } from '../utils/ordersApi';
 import '../styles/menu.css';
 
 export const CartPage = ({ onBack, customerId = 1 }) => {
@@ -31,9 +31,10 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                 items: getOrderItems(),
             };
 
-            const response = await orderApi.createOrder(orderData);
+            const response = await createOrder(orderData);
 
-            if (response && response.code === 200) {
+            // createOrder returns the created order data on success
+            if (response) {
                 Toast.show({
                     icon: 'success',
                     content: 'Order created successfully!',
@@ -43,7 +44,7 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                 clearCart();
                 onBack();
             } else {
-                throw new Error(response?.message || 'Failed to create order');
+                throw new Error('Failed to create order');
             }
         } catch (error) {
             Toast.show({
@@ -85,6 +86,7 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                     </Card>
                 ) : (
                     <>
+                        {/* Cart Items */}
                         <div className="cart-items">
                             {cartItems.map(item => (
                                 <Card key={`${item.menuId}-${item.skuId}`} className="cart-item-card">
@@ -129,6 +131,7 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                             ))}
                         </div>
 
+                        {/* Price Summary */}
                         <Card className="cart-summary">
                             <div className="summary-row">
                                 <span>Subtotal</span>
@@ -144,36 +147,38 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                             </div>
                         </Card>
 
+                        {/* Train Information Card - between Total Price and Checkout */}
                         {selectedTrain && (
-                            <Card className="train-info-summary">
-                                <div className="train-info-header">
-                                    <span>🚂 Train Order</span>
+                            <Card className="train-info-summary" style={{ textAlign: 'center', padding: '16px' }}>
+                                <div className="train-info-header" style={{ marginBottom: '12px' }}>
+                                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#6F4E37' }}>🚂 Train Order</span>
                                 </div>
                                 <div className="train-info-details">
-                                    <div className="train-info-row">
-                                        <span>Train ID:</span>
-                                        <span><strong>{selectedTrain.trainId}</strong></span>
+                                    <div className="train-info-row" style={{ marginBottom: '8px' }}>
+                                        <span style={{ fontSize: '14px', color: '#666' }}>Train ID: </span>
+                                        <span style={{ fontSize: '14px' }}>{selectedTrain.trainId}</span>
                                     </div>
-                                    <div className="train-info-row">
-                                        <span>Station:</span>
-                                        <span>{selectedTrain.currentStation}</span>
+                                    <div className="train-info-row" style={{ marginBottom: '8px' }}>
+                                        <span style={{ fontSize: '14px', color: '#666' }}>Station: </span>
+                                        <span style={{ fontSize: '14px' }}>{selectedTrain.currentStation}</span>
                                     </div>
-                                    <div className="train-info-row">
-                                        <span>Arrival Time:</span>
-                                        <span>
-                      {selectedTrain.arrivalTime
-                          ? new Date(selectedTrain.arrivalTime).toLocaleTimeString('en-GB', { hour12: false })
-                          : '--'}
-                    </span>
+                                    <div className="train-info-row" style={{ marginBottom: '8px' }}>
+                                        <span style={{ fontSize: '14px', color: '#666' }}>Arrival Time: </span>
+                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a' }}>
+          {selectedTrain.arrivalTime
+              ? new Date(selectedTrain.arrivalTime).toLocaleTimeString('en-GB', { hour12: false })
+              : '--'}
+        </span>
                                     </div>
-                                    <div className="train-info-row">
-                                        <span>Platform:</span>
-                                        <span>{selectedTrain.platform || 'TBC'}</span>
+                                    <div className="train-info-row" style={{ marginBottom: '8px' }}>
+                                        <span style={{ fontSize: '14px', color: '#666' }}>Platform: </span>
+                                        <span style={{ fontSize: '14px' }}>{selectedTrain.platform || 'TBC'}</span>
                                     </div>
                                 </div>
                             </Card>
                         )}
 
+                        {/* Checkout Button */}
                         <div className="cart-button-group">
                             <Button
                                 block

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavBar, Button, Card, Space, Radio, Stepper, Toast } from 'antd-mobile';
 import { ChevronLeft } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { useCart } from './CartContext';
 import '../styles/menu.css';
 
 export const MenuDetailPage = ({ menu, onBack }) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import request from '../utils/request';
-import { useCart } from '../shared/context/CartContext';
+import { useCart } from '../pages/CartContext';
 
 const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectStation }) => {
     const [loading, setLoading] = useState(false);
@@ -23,6 +23,7 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
     useEffect(() => {
         if (externalStation !== undefined) {
             setSelectedStation(externalStation);
+            
         }
     }, [externalStation]);
 

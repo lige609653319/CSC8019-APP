@@ -104,43 +104,5 @@ export const menuApi = {
   },
 };
 
-// Order API
-export const orderApi = {
-  // Create order
-  createOrder: async (orderData) => {
-    try {
-      console.log('[Order API] Creating order:', orderData);
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/orders/create`, {
-        method: 'POST',
-        headers: getAuthHeaders(token),
-        body: JSON.stringify(orderData),
-      });
-      const data = await handleResponse(response, 'createOrder');
-      console.log('[Order API] Order created successfully:', data);
-      return data; // Return the whole response object for more flexible handling
-    } catch (error) {
-      console.error('[Order API] Create order error:', error);
-      throw error;
-    }
-  },
-
-  // Get orders by customer
-  getOrdersByCustomer: async (customerId) => {
-    try {
-      console.log(`[Order API] Fetching orders for customer: ${customerId}`);
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/orders/${customerId}`, {
-        headers: getAuthHeaders(token)
-      });
-      const data = await handleResponse(response, 'getOrdersByCustomer');
-      return data.data || [];
-    } catch (error) {
-      console.error('[Order API] Get orders error:', error);
-      throw error;
-    }
-  },
-};
-
 // Export API URL for debugging
 export { API_BASE_URL };

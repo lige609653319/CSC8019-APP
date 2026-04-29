@@ -5,7 +5,7 @@ import Layout from './pages/Layout'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Orders from './pages/Orders'
-import { CartProvider } from './shared/context/CartContext'
+import { CartProvider } from './pages/CartContext'
 import './App.css'
 
 const PrivateRoute = ({ children }) => {

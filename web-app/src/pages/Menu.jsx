@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { CartProvider } from '../shared/context/CartContext'
-import { MenuPage } from '../features/menu/pages/MenuPage'
-import { MenuDetailPage } from '../features/menu/pages/MenuDetailPage'
-import { CartPage } from '../features/menu/pages/CartPage'
+import { CartProvider } from './CartContext'
+import { MenuPage } from './MenuPage'
+import { MenuDetailPage } from './MenuDetailPage'
+import { CartPage } from './CartPage'
 import { PullToRefresh } from 'antd-mobile'
 import '../App.css'
 
