@@ -5,13 +5,17 @@ import { CartPage } from './CartPage'
 import { PullToRefresh } from 'antd-mobile'
 import '../App.css'
 
-function Menu({ initialPage = 'menu', onCartOpen }) {
+function Menu({ initialPage = 'menu', onCartOpen, cartClickTrigger }) {
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [selectedMenu, setSelectedMenu] = useState(null)
 
   useEffect(() => {
+    // Update currentPage when initialPage changes
     setCurrentPage(initialPage)
-  }, [initialPage])
+    if (initialPage === 'cart') {
+      setSelectedMenu(null)  // Clear selected menu when opening cart
+    }
+  }, [initialPage, cartClickTrigger])  // Add cartClickTrigger to dependency array
 
   const handleSelectMenu = (menu) => {
     setSelectedMenu(menu)
