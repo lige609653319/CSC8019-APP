@@ -22,6 +22,7 @@ import LoyaltyClubSection from '../components/LoyaltyClubSection'
 import TrainInfo from '../components/TrainInfo'
 import Orders from './Orders'
 import Menu from './Menu'
+import { useCart } from './CartContext'
 import '../App.css'
 
 const COFFEE_DATA = [
@@ -33,15 +34,15 @@ const COFFEE_DATA = [
 ]
 
 function Home() {
-    const [cartCount, setCartCount] = useState(0)
     const [activeKey, setActiveKey] = useState('home')
+    const [menuCurrentPage, setMenuCurrentPage] = useState('menu')
+    const [selectedMenu, setSelectedMenu] = useState(null)
     const [loyaltyBalance, setLoyaltyBalance] = useState(null)
     const [loyaltyTransactions, setLoyaltyTransactions] = useState([])
     const [loyaltyLoading, setLoyaltyLoading] = useState(false)
     const [loyaltyError, setLoyaltyError] = useState('')
-
-    // 添加铁路信息模态框的状态
     const [trainModalVisible, setTrainModalVisible] = useState(false)
+    const { getTotalCount, addToCart } = useCart()
 
     const loadLoyaltyData = async () => {
         setLoyaltyLoading(true)
@@ -74,9 +75,9 @@ function Home() {
         if (activeKey === 'profile') loadLoyaltyData()
     }, [activeKey])
 
-    const addToCart = (e) => {
-        e.stopPropagation()
-        setCartCount(prev => prev + 1)
+    const handleCartClick = () => {
+        setActiveKey('menu')
+        setMenuCurrentPage('cart')
     }
 
     const tabs = [
@@ -91,8 +92,8 @@ function Home() {
             <NavBar
                 className="nav-bar"
                 right={
-                    <div onClick={() => console.log('Cart clicked')}>
-                        <Badge content={cartCount > 0 ? cartCount : null}>
+                    <div onClick={handleCartClick} style={{ cursor: 'pointer', position: 'relative' }}>
+                        <Badge content={getTotalCount() > 0 ? getTotalCount() : null}>
                             <ShoppingCart size={24} color="#6F4E37" />
                         </Badge>
                     </div>
@@ -128,7 +129,7 @@ function Home() {
                     </div>
                 ) : activeKey === 'menu' ? (
                     <div className="main-content">
-                        <Menu />
+                        <Menu initialPage={menuCurrentPage} />
                     </div>
                 ) : (
                     <PullToRefresh onRefresh={async () => console.log('refresh')}>

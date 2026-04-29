@@ -85,27 +85,6 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                         >
                             <Train size={22} color="#6F4E37" />
                         </div>
-                        <div onClick={onOpenCart} style={{ cursor: 'pointer', position: 'relative' }}>
-                            <ShoppingCart size={22} color="#6F4E37" />
-                            {getTotalCount() > 0 && (
-                                <span style={{
-                                    position: 'absolute',
-                                    top: '-8px',
-                                    right: '-8px',
-                                    backgroundColor: '#ff4d4f',
-                                    color: 'white',
-                                    borderRadius: '50%',
-                                    width: '16px',
-                                    height: '16px',
-                                    fontSize: '10px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    {getTotalCount()}
-                                </span>
-                            )}
-                        </div>
                     </div>
                 }
                 back={null}
@@ -206,20 +185,6 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                         ))
                     )}
                 </div>
-
-                {getTotalCount() > 0 && (
-                    <div className="cart-button-bottom">
-                        <Button
-                            block
-                            color="primary"
-                            size="large"
-                            onClick={onOpenCart}
-                        >
-                            <ShoppingCart size={20} style={{ marginRight: '8px' }} />
-                            Cart ({getTotalCount()}) · £{getTotalPrice().toFixed(2)}
-                        </Button>
-                    </div>
-                )}
             </div>
 
             <TrainInfo

@@ -1,14 +1,17 @@
-import React, { useState } from 'react'
-import { CartProvider } from './CartContext'
+import React, { useState, useEffect } from 'react'
 import { MenuPage } from './MenuPage'
 import { MenuDetailPage } from './MenuDetailPage'
 import { CartPage } from './CartPage'
 import { PullToRefresh } from 'antd-mobile'
 import '../App.css'
 
-function Menu() {
-  const [currentPage, setCurrentPage] = useState('menu')
+function Menu({ initialPage = 'menu', onCartOpen }) {
+  const [currentPage, setCurrentPage] = useState(initialPage)
   const [selectedMenu, setSelectedMenu] = useState(null)
+
+  useEffect(() => {
+    setCurrentPage(initialPage)
+  }, [initialPage])
 
   const handleSelectMenu = (menu) => {
     setSelectedMenu(menu)
@@ -29,22 +32,20 @@ function Menu() {
   }
 
   return (
-    <CartProvider>
-      <PullToRefresh onRefresh={async () => console.log('refresh')}>
-        <div className="main-content">
-          {currentPage === 'menu' && (
-            <MenuPage onSelectMenu={handleSelectMenu} onOpenCart={handleOpenCart} />
-          )}
-          {currentPage === 'detail' && selectedMenu && (
-            <MenuDetailPage menu={selectedMenu} onBack={handleBackFromDetail} />
-          )}
-          {currentPage === 'cart' && (
-            <CartPage onBack={handleBackFromCart} />
-          )}
-          <div style={{ height: 100 }} />
-        </div>
-      </PullToRefresh>
-    </CartProvider>
+    <PullToRefresh onRefresh={async () => console.log('refresh')}>
+      <div className="main-content">
+        {currentPage === 'menu' && (
+          <MenuPage onSelectMenu={handleSelectMenu} onOpenCart={handleOpenCart} />
+        )}
+        {currentPage === 'detail' && selectedMenu && (
+          <MenuDetailPage menu={selectedMenu} onBack={handleBackFromDetail} />
+        )}
+        {currentPage === 'cart' && (
+          <CartPage onBack={handleBackFromCart} />
+        )}
+        <div style={{ height: 100 }} />
+      </div>
+    </PullToRefresh>
   )
 }
 

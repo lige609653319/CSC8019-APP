@@ -40,13 +40,6 @@
   overflow: hidden;
 }
 
-/* Cart Button at Bottom */
-.cart-button-bottom {
-  padding: 12px;
-  background-color: #f5f5f5;
-  border-top: 1px solid #e0e0e0;
-}
-
 /* Category Sidebar */
 .category-sidebar {
   width: 100px;
