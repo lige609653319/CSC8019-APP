@@ -39,13 +39,11 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
     const [searchInput, setSearchInput] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
-    const [searchLoading, setSearchLoading] = useState(false);
 
     const {
         cartItems,
         clearCart,
         getTotalCount,
-        getTotalPrice,
     } = useCart();
 
     const handleImageError = (menuId) => {
@@ -156,6 +154,62 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
         setSelectedCategory('COFFEE');
     };
 
+    const getStoreDisplayName = (storeItem) => {
+        if (!storeItem) {
+            return 'Choose store';
+        }
+
+        if (storeItem.locationName) {
+            return `${storeItem.name} - ${storeItem.locationName}`;
+        }
+
+        return storeItem.name || 'Whistlestop Coffee Hut';
+    };
+
+    const switchStoreByStation = (stationName) => {
+        if (!stationName) {
+            return;
+        }
+
+        const matchedStore = stores.find(item =>
+            item.locationName?.toLowerCase().trim() === stationName.toLowerCase().trim()
+        );
+
+        if (!matchedStore) {
+            Toast.show({
+                content: `No store found for ${stationName}. Please choose a store manually.`,
+                position: 'top',
+            });
+            return;
+        }
+
+        if (Number(matchedStore.id) === Number(selectedStoreId)) {
+            return;
+        }
+
+        if (cartItems.length > 0) {
+            Dialog.confirm({
+                title: 'Switch store?',
+                content: `The selected station matches ${getStoreDisplayName(matchedStore)}. Switching store will clear your current cart.`,
+                confirmText: 'Switch',
+                cancelText: 'Cancel',
+                onConfirm: () => {
+                    clearCart();
+                    switchStore(matchedStore.id);
+                },
+            });
+            return;
+        }
+
+        switchStore(matchedStore.id);
+
+        Toast.show({
+            content: `Store switched to ${getStoreDisplayName(matchedStore)}`,
+            position: 'top',
+            duration: 1500,
+        });
+    };
+
     const handleStoreSelect = (newStore) => {
         const newStoreId = newStore.id;
 
@@ -192,25 +246,16 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
         return labels[category] || category;
     };
 
-    const getStoreDisplayName = (storeItem) => {
-        if (!storeItem) {
-            return 'Choose store';
-        }
-
-        if (storeItem.locationName) {
-            return `${storeItem.name} - ${storeItem.locationName}`;
-        }
-
-        return storeItem.name || 'Whistlestop Coffee Hut';
-    };
-
     const handleStationSelect = (station) => {
         setSelectedStation(station);
+
         Toast.show({
             content: `Selected station: ${station}`,
             position: 'top',
             duration: 1500,
         });
+
+        switchStoreByStation(station);
     };
 
     const storeName = getStoreDisplayName(store);
@@ -224,9 +269,47 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div
                             onClick={() => setTrainModalVisible(true)}
-                            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                            style={{
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                            }}
                         >
                             <Train size={22} color="#6F4E37" />
+                        </div>
+
+                        <div
+                            onClick={onOpenCart}
+                            style={{
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                position: 'relative',
+                            }}
+                        >
+                            <ShoppingCart size={22} color="#6F4E37" />
+
+                            {getTotalCount() > 0 && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        top: '-8px',
+                                        right: '-8px',
+                                        backgroundColor: '#ff4d4f',
+                                        color: 'white',
+                                        borderRadius: '50%',
+                                        minWidth: '16px',
+                                        height: '16px',
+                                        fontSize: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: '0 4px',
+                                    }}
+                                >
+                                    {getTotalCount()}
+                                </div>
+                            )}
                         </div>
                     </div>
                 }
@@ -275,7 +358,6 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                 </div>
             </NavBar>
 
-            {/* Search Bar */}
             <div className="menu-search-bar">
                 <div className="search-input-wrapper">
                     <Search size={18} color="#999" />
@@ -296,14 +378,9 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                     )}
                 </div>
 
-                {/* Search Results Dropdown */}
                 {showSearchResults && (
                     <div className="search-results-dropdown">
-                        {searchLoading ? (
-                            <div className="search-result-item">
-                                <Skeleton animated paragraph={{ rows: 1 }} />
-                            </div>
-                        ) : searchResults.length === 0 ? (
+                        {searchResults.length === 0 ? (
                             <div className="search-result-item">
                                 <span style={{ color: '#999' }}>No results found</span>
                             </div>
