@@ -94,7 +94,20 @@ export const menuApi = {
         headers: getAuthHeaders(token)
       });
       const data = await handleResponse(response, 'searchMenus');
-      return data.data || [];
+      const imageMap = {
+        'Americano': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Americano.png',
+        'Americano with milk': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/AmericanoWithMilk.png',
+        'Cappuccino': 'https://github.com/lige609653319/CSC8019-APP/blob/master/web-app/src/img/Cappuccino.png?raw=true',
+        'Latte': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Latte.png',
+        'Mocha': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Mocha.png',
+        'Hot Chocolate': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Chocolate.png',
+        'Mineral Water': 'https://raw.githubusercontent.com/lige609653319/CSC8019-APP/master/web-app/src/img/Water.png',
+      };
+      const searchResultsWithImages = (data.data || []).map(item => ({
+        ...item,
+        imageUrl: imageMap[item.name] || null
+      }));
+      return searchResultsWithImages;
     } catch (error) {
       console.error('[Menu API] Search error:', error);
       throw error;

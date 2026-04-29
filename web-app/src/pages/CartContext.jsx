@@ -25,6 +25,7 @@ export const CartProvider = ({ children }) => {
                 {
                     menuId: menu.id,
                     menuName: menu.name,
+                    imageUrl: menu.imageUrl,
                     skuId: selectedSku.id,
                     size: selectedSku.size,
                     price: selectedSku.price,

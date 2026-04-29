@@ -5,6 +5,23 @@ import { useCart } from './CartContext';
 import { createOrder } from '../utils/ordersApi';
 import '../styles/menu.css';
 
+const CartItemImage = ({ imageUrl, menuName }) => {
+    const [imageError, setImageError] = useState(false);
+
+    return imageUrl && !imageError ? (
+        <img
+            src={imageUrl}
+            alt={menuName}
+            className="item-image"
+            onError={() => setImageError(true)}
+        />
+    ) : (
+        <div className="item-image-placeholder">
+            <div className="placeholder-icon">☕</div>
+        </div>
+    );
+};
+
 export const CartPage = ({ onBack, customerId = 1 }) => {
     const {
         cartItems,
@@ -71,7 +88,6 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
         <div className="cart-page">
             <NavBar
                 onBack={onBack}
-                left={<ChevronLeft size={24} />}
             >
                 Cart
             </NavBar>
@@ -91,9 +107,7 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                             {cartItems.map(item => (
                                 <Card key={`${item.menuId}-${item.skuId}`} className="cart-item-card">
                                     <div className="cart-item-content">
-                                        <div className="item-image-placeholder">
-                                            <div className="placeholder-icon">☕</div>
-                                        </div>
+                                        <CartItemImage imageUrl={item.imageUrl} menuName={item.menuName} />
 
                                         <div className="item-details">
                                             <div className="item-name">{item.menuName}</div>
@@ -165,10 +179,10 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
                                     <div className="train-info-row" style={{ marginBottom: '8px' }}>
                                         <span style={{ fontSize: '14px', color: '#666' }}>Arrival Time: </span>
                                         <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a' }}>
-          {selectedTrain.arrivalTime
-              ? new Date(selectedTrain.arrivalTime).toLocaleTimeString('en-GB', { hour12: false })
-              : '--'}
-        </span>
+                                            {selectedTrain.arrivalTime
+                                                ? new Date(selectedTrain.arrivalTime).toLocaleTimeString('en-GB', { hour12: false })
+                                                : '--'}
+                                        </span>
                                     </div>
                                     <div className="train-info-row" style={{ marginBottom: '8px' }}>
                                         <span style={{ fontSize: '14px', color: '#666' }}>Platform: </span>

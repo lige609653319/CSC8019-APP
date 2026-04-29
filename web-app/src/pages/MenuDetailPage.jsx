@@ -48,7 +48,6 @@ export const MenuDetailPage = ({ menu, onBack }) => {
     <div className="menu-detail-page">
       <NavBar
         onBack={onBack}
-        left={<ChevronLeft size={24} />}
       >
         Details
       </NavBar>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { NavBar, Card, Button, Tag, Skeleton, Empty, Toast } from 'antd-mobile';
-import { ShoppingCart, Train } from 'lucide-react';
+import { NavBar, Card, Button, Tag, Skeleton, Empty, Toast, Input } from 'antd-mobile';
+import { ShoppingCart, Train, Search, X } from 'lucide-react';
 import { menuApi, storeApi } from '../utils/menuApi';
 import { useCart } from './CartContext';
 import TrainInfo from '../components/TrainInfo';
@@ -18,10 +18,52 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
     const [trainModalVisible, setTrainModalVisible] = useState(false);
     const [selectedStation, setSelectedStation] = useState('');
     const [imageErrors, setImageErrors] = useState({});
+    const [searchInput, setSearchInput] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [showSearchResults, setShowSearchResults] = useState(false);
+    const [searchLoading, setSearchLoading] = useState(false);
     const { getTotalCount, getTotalPrice } = useCart();
     
     const handleImageError = (menuId) => {
         setImageErrors(prev => ({ ...prev, [menuId]: true }));
+    };
+
+    const handleSearch = async (value) => {
+        setSearchInput(value);
+        
+        if (!value.trim()) {
+            setSearchResults([]);
+            setShowSearchResults(false);
+            return;
+        }
+
+        try {
+            setSearchLoading(true);
+            const results = await menuApi.searchMenus(STORE_ID, value.trim());
+            setSearchResults(results || []);
+            setShowSearchResults(true);
+        } catch (error) {
+            console.error('Search error:', error);
+            Toast.show({
+                content: 'Search failed',
+                position: 'top',
+            });
+        } finally {
+            setSearchLoading(false);
+        }
+    };
+
+    const handleSelectSearchResult = (menu) => {
+        setSearchInput('');
+        setShowSearchResults(false);
+        setSearchResults([]);
+        onSelectMenu(menu);
+    };
+
+    const clearSearch = () => {
+        setSearchInput('');
+        setSearchResults([]);
+        setShowSearchResults(false);
     };
 
     useEffect(() => {
@@ -109,6 +151,64 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                     </div>
                 </div>
             </NavBar>
+
+            {/* Search Bar */}
+            <div className="menu-search-bar">
+                <div className="search-input-wrapper">
+                    <Search size={18} color="#999" />
+                    <Input
+                        placeholder="Search for menu..."
+                        value={searchInput}
+                        onChange={(val) => handleSearch(val)}
+                        clearable
+                        style={{ flex: 1, marginLeft: '8px' }}
+                    />
+                    {searchInput && (
+                        <X size={18} color="#999" onClick={clearSearch} style={{ cursor: 'pointer' }} />
+                    )}
+                </div>
+
+                {/* Search Results Dropdown */}
+                {showSearchResults && (
+                    <div className="search-results-dropdown">
+                        {searchLoading ? (
+                            <div className="search-result-item">
+                                <Skeleton animated paragraph={{ rows: 1 }} />
+                            </div>
+                        ) : searchResults.length === 0 ? (
+                            <div className="search-result-item">
+                                <span style={{ color: '#999' }}>No results found</span>
+                            </div>
+                        ) : (
+                            searchResults.map(item => (
+                                <div 
+                                    key={item.id} 
+                                    className="search-result-item"
+                                    onClick={() => handleSelectSearchResult(item)}
+                                >
+                                    <div className="search-result-image">
+                                        {item.imageUrl && !imageErrors[`search-${item.id}`] ? (
+                                            <img 
+                                                src={item.imageUrl} 
+                                                alt={item.name}
+                                                onError={() => setImageErrors(prev => ({ ...prev, [`search-${item.id}`]: true }))}
+                                            />
+                                        ) : (
+                                            <div style={{ fontSize: '20px' }}>☕</div>
+                                        )}
+                                    </div>
+                                    <div className="search-result-info">
+                                        <div className="search-result-name">{item.name}</div>
+                                        <div className="search-result-category">
+                                            {item.category} · £{item.skus?.[0]?.price || '0.00'}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
+            </div>
 
             <div className="menu-container">
                 <div className="category-sidebar">
