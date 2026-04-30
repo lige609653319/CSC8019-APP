@@ -5,7 +5,11 @@ import { useCart } from './CartContext';
 import '../styles/menu.css';
 
 export const MenuDetailPage = ({ menu, onBack }) => {
-  const [selectedSku, setSelectedSku] = useState(menu.skus?.[0] || null);
+  const [selectedSku, setSelectedSku] = useState(() => {
+    if (!menu.skus || menu.skus.length === 0) return null;
+    // 寻找常规杯 (REGULAR)，如果找不到则默认选第一个
+    return menu.skus.find(s => s.size === 'REGULAR') || menu.skus[0];
+  });
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
   const { addToCart } = useCart();
@@ -56,9 +60,9 @@ export const MenuDetailPage = ({ menu, onBack }) => {
       <div className="detail-container">
         {/* Product Image Placeholder */}
         {menu.imageUrl && !imageError ? (
-          <img 
-            src={menu.imageUrl} 
-            alt={menu.name} 
+          <img
+            src={menu.imageUrl}
+            alt={menu.name}
             className="detail-image"
             onError={handleImageError}
           />
@@ -79,29 +83,31 @@ export const MenuDetailPage = ({ menu, onBack }) => {
           <div className="sku-title">Select Size</div>
           <Space direction="vertical" block>
             {menu.skus && menu.skus.length > 0 ? (
-              menu.skus.map(sku => (
-                <div
-                  key={sku.id}
-                  className="sku-option"
-                  onClick={() => setSelectedSku(sku)}
-                >
-                  <Radio
-                    checked={selectedSku?.id === sku.id}
-                    onChange={() => setSelectedSku(sku)}
-                  />
-                  <div className="sku-option-content">
-                    <div className="sku-size">{getSizeLabel(sku.size)}</div>
-                    <div className="sku-availability">
-                      {sku.isAvailable ? (
-                        <span className="available">In Stock</span>
-                      ) : (
-                        <span className="unavailable">Out of Stock</span>
-                      )}
+              [...menu.skus]
+                .sort((a, b) => (a.size === 'REGULAR' ? -1 : 1))
+                .map(sku => (
+                  <div
+                    key={sku.id}
+                    className="sku-option"
+                    onClick={() => setSelectedSku(sku)}
+                  >
+                    <Radio
+                      checked={selectedSku?.id === sku.id}
+                      onChange={() => setSelectedSku(sku)}
+                    />
+                    <div className="sku-option-content">
+                      <div className="sku-size">{getSizeLabel(sku.size)}</div>
+                      <div className="sku-availability">
+                        {sku.isAvailable ? (
+                          <span className="available">In Stock</span>
+                        ) : (
+                          <span className="unavailable">Out of Stock</span>
+                        )}
+                      </div>
                     </div>
+                    <div className="sku-price">£{sku.price}</div>
                   </div>
-                  <div className="sku-price">£{sku.price}</div>
-                </div>
-              ))
+                ))
             ) : (
               <div>No sizes available</div>
             )}

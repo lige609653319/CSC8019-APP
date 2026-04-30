@@ -514,7 +514,7 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                                             </div>
                                             <div className="menu-bottom">
                                                 <div className="menu-price">
-                                                    £{menu.skus?.[0]?.price || '0.00'}
+                                                    £{menu.skus?.[1]?.price || '0.00'}
                                                 </div>
                                                 <Button
                                                     color="primary"
