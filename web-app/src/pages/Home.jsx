@@ -296,7 +296,7 @@ function Home() {
                             }
                             back={null}
                         >
-                            <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>Coffee Client</span>
+                            <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>Choose store</span>
                         </NavBar>
                         <div className="content-scroll">
                             <PullToRefresh onRefresh={async () => {
@@ -389,59 +389,26 @@ function Home() {
                                         </div>
                                     </div>
 
-                                    <h2 className="section-title">Exclusive Offers</h2>
-                                    <Card className="promo-card">
-                                <div className="promo-image-container">
-                                    <Image
-                                        src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80"
-                                        lazy
-                                        style={{ borderRadius: 8, height: 160 }}
-                                    />
-                                    <div className="promo-tag">New</div>
-                                </div>
-                                <div className="promo-info">
-                                    <h3>Spring Collection</h3>
-                                    <p>Taste the freshness of our new seasonal blends.</p>
-                                    <Button color="primary" size="small" shape="rounded">
-                                        Order Now
-                                    </Button>
-                                </div>
-                            </Card>
+                                    <div style={{ marginTop: '16px', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+                                        <iframe
+                                            width="100%"
+                                            height="250"
+                                            style={{ border: 0, display: 'block' }}
+                                            loading="lazy"
+                                            allowFullScreen
+                                            src={`https://maps.google.com/maps?q=${encodeURIComponent(getStoreName() + ' ' + getStoreLocation())}&t=&z=15&ie=UTF8&iwloc=&output=embed&hl=en`}
+                                        ></iframe>
+                                    </div>
 
-                            <h2 className="section-title">Menu</h2>
-                            <List className="coffee-list">
-                                {COFFEE_DATA.map(coffee => (
-                                    <List.Item
-                                        key={coffee.id}
-                                        prefix={
-                                            <Image
-                                                src={coffee.image}
-                                                style={{ borderRadius: 8 }}
-                                                fit="cover"
-                                                width={80}
-                                                height={80}
-                                            />
-                                        }
-                                        description={coffee.description}
-                                        extra={
-                                            <div className="item-extra">
-                                                <span className="price">${coffee.price.toFixed(2)}</span>
-                                                <Button
-                                                    size="mini"
-                                                    color="primary"
-                                                    fill="solid"
-                                                    className="add-btn"
-                                                    onClick={addToCart}
-                                                >
-                                                    Add
-                                                </Button>
-                                            </div>
-                                        }
+                                    <Button
+                                        block
+                                        color="primary"
+                                        size="large"
+                                        style={{ marginTop: '24px', backgroundColor: '#6F4E37', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}
+                                        onClick={() => setActiveKey('menu')}
                                     >
-                                        <span className="coffee-name">{coffee.name}</span>
-                                    </List.Item>
-                                ))}
-                            </List>
+                                        Start Order
+                                    </Button>
                                 </div>
                             </PullToRefresh>
                         </div>

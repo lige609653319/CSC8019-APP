@@ -263,7 +263,7 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
     };
 
     const storeName = getStoreDisplayName(store);
-    const displayStation = selectedStation || 'Choose your station';
+    const displayStation = selectedStation || 'Choose your train';
 
     return (
         <div className="menu-page">
