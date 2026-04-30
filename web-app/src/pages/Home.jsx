@@ -91,53 +91,51 @@ function Home() {
 
     return (
         <div className="app-container">
-            <NavBar
-                className="nav-bar"
-                right={
-                    <div onClick={handleCartClick} style={{ cursor: 'pointer', position: 'relative' }}>
-                        <Badge content={getTotalCount() > 0 ? getTotalCount() : null}>
-                            <ShoppingCart size={24} color="#6F4E37" />
-                        </Badge>
-                    </div>
-                }
-                back={null}
-            >
-                <span style={{ fontWeight: 'bold', color: '#6F4E37' }}>Coffee Client</span>
-            </NavBar>
 
             {/* <div className="search-wrapper">
                 <SearchBar placeholder='Search for coffee...' showCancelButton />
             </div> */}
 
-            <div className="content-scroll">
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 {activeKey === 'profile' ? (
-                    <PullToRefresh onRefresh={loadLoyaltyData}>
-                        <div className="main-content">
-                            <LoyaltyClubSection
-                                balance={loyaltyBalance}
-                                transactions={loyaltyTransactions}
-                                loading={loyaltyLoading}
-                                error={loyaltyError || undefined}
-                                onRefresh={loadLoyaltyData}
-                                onLogout={handleLogout}
-                            />
-                            <div style={{ height: 100 }} />
-                        </div>
-                    </PullToRefresh>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <LoyaltyClubSection
+                            balance={loyaltyBalance}
+                            transactions={loyaltyTransactions}
+                            loading={loyaltyLoading}
+                            error={loyaltyError || undefined}
+                            onRefresh={loadLoyaltyData}
+                            onLogout={handleLogout}
+                        />
+                    </div>
                 ) : activeKey === 'orders' ? (
-                    <div className="main-content">
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <Orders />
-                        <div style={{ height: 100 }} />
                     </div>
                 ) : activeKey === 'menu' ? (
-                    <div className="main-content">
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <Menu initialPage={menuCurrentPage} cartClickTrigger={cartClickCount} />
                     </div>
                 ) : (
-                    <PullToRefresh onRefresh={async () => console.log('refresh')}>
-                        <div className="main-content">
-                            <h2 className="section-title">Exclusive Offers</h2>
-                            <Card className="promo-card">
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <NavBar
+                            className="nav-bar"
+                            right={
+                                <div onClick={handleCartClick} style={{ cursor: 'pointer', position: 'relative' }}>
+                                    <Badge content={getTotalCount() > 0 ? getTotalCount() : null}>
+                                        <ShoppingCart size={24} color="#6F4E37" />
+                                    </Badge>
+                                </div>
+                            }
+                            back={null}
+                        >
+                            <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>Coffee Client</span>
+                        </NavBar>
+                        <div className="content-scroll">
+                            <PullToRefresh onRefresh={async () => console.log('refresh')}>
+                                <div className="main-content">
+                                    <h2 className="section-title">Exclusive Offers</h2>
+                                    <Card className="promo-card">
                                 <div className="promo-image-container">
                                     <Image
                                         src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80"
@@ -187,9 +185,10 @@ function Home() {
                                     </List.Item>
                                 ))}
                             </List>
-                            <div style={{ height: 100 }} />
+                                </div>
+                            </PullToRefresh>
                         </div>
-                    </PullToRefresh>
+                    </div>
                 )}
             </div>
 

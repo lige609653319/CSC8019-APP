@@ -11,6 +11,7 @@ import {
     Popup,
     List,
     Dialog,
+    PullToRefresh,
 } from 'antd-mobile';
 import { ShoppingCart, Train, Search, X, MapPin, ChevronDown } from 'lucide-react';
 import { menuApi, storeApi } from '../utils/menuApi';
@@ -264,9 +265,9 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
     return (
         <div className="menu-page">
             <NavBar
-                className="menu-nav-bar"
+                className="nav-bar"
                 right={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px', paddingRight: '4px' }}>
                         <div
                             onClick={() => setTrainModalVisible(true)}
                             style={{
@@ -275,7 +276,7 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                                 alignItems: 'center',
                             }}
                         >
-                            <Train size={22} color="#6F4E37" />
+                            <Train size={24} color="#6F4E37" />
                         </div>
 
                         <div
@@ -287,7 +288,7 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                                 position: 'relative',
                             }}
                         >
-                            <ShoppingCart size={22} color="#6F4E37" />
+                            <ShoppingCart size={24} color="#6F4E37" />
 
                             {getTotalCount() > 0 && (
                                 <div
@@ -315,51 +316,53 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                 }
                 back={null}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>
-                        Whistlestop Coffee Hut
-                    </span>
+                <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>
+                    Menu
+                </span>
+            </NavBar>
 
+            <div className="menu-search-bar" style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div
                         onClick={() => setStorePopupVisible(true)}
                         style={{
-                            fontSize: '13px',
+                            fontSize: '14px',
                             color: '#6F4E37',
                             cursor: 'pointer',
-                            marginTop: '3px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '4px',
-                            maxWidth: '260px',
+                            flex: 1,
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
+                            fontWeight: 500
                         }}
                     >
-                        <MapPin size={14} />
-                        <span>{storeName}</span>
+                        <MapPin size={16} />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{storeName}</span>
                         <ChevronDown size={14} />
                     </div>
 
                     <div
                         onClick={() => setTrainModalVisible(true)}
                         style={{
-                            fontSize: '13px',
+                            fontSize: '14px',
                             color: '#1890ff',
                             cursor: 'pointer',
-                            marginTop: '2px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '4px',
+                            fontWeight: 500,
+                            marginLeft: '12px',
+                            flexShrink: 0
                         }}
                     >
                         🚆 {displayStation}
                     </div>
                 </div>
-            </NavBar>
 
-            <div className="menu-search-bar">
-                <div className="search-input-wrapper">
+                <div className="search-input-wrapper" style={{ padding: '6px 12px' }}>
                     <Search size={18} color="#999" />
                     <Input
                         placeholder="Search for menu..."
@@ -433,73 +436,77 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                     ))}
                 </div>
 
-                <div className="menu-list">
-                    {error && (
-                        <Card className="error-card">
-                            <div className="error-content">
-                                <div className="error-icon">⚠️</div>
-                                <div>{error}</div>
-                                <Button
-                                    color="primary"
-                                    size="small"
-                                    onClick={() => loadData(selectedStoreId)}
-                                >
-                                    Retry
-                                </Button>
-                            </div>
-                        </Card>
-                    )}
-
-                    {loading ? (
-                        <Skeleton animated paragraph={{ rows: 3 }} />
-                    ) : filteredMenus.length === 0 ? (
-                        <Empty description="No items available" />
-                    ) : (
-                        filteredMenus.map(menu => (
-                            <Card
-                                key={menu.id}
-                                className="menu-card"
-                                onClick={() => onSelectMenu(menu)}
-                            >
-                                <div className="menu-card-content">
-                                    {menu.imageUrl && !imageErrors[menu.id] ? (
-                                        <img
-                                            src={menu.imageUrl}
-                                            alt={menu.name}
-                                            className="menu-image"
-                                            onError={() => handleImageError(menu.id)}
-                                        />
-                                    ) : (
-                                        <div className="placeholder-icon">☕</div>
-                                    )}
-                                    <div className="menu-info">
-                                        <div className="menu-name">{menu.name}</div>
-                                        <div className="menu-category">
-                                            <Tag color="default">
-                                                {getCategoryLabel(menu.category)}
-                                            </Tag>
-                                        </div>
-                                        <div className="menu-bottom">
-                                            <div className="menu-price">
-                                                £{menu.skus?.[0]?.price || '0.00'}
-                                            </div>
-                                            <Button
-                                                color="primary"
-                                                fill="solid"
-                                                size="small"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onSelectMenu(menu);
-                                                }}
-                                            >
-                                                Select Size
-                                            </Button>
-                                        </div>
-                                    </div>
+                <div className="menu-list-container">
+                    <PullToRefresh onRefresh={async () => await loadData(selectedStoreId)}>
+                        <div className="menu-list">
+                        {error && (
+                            <Card className="error-card">
+                                <div className="error-content">
+                                    <div className="error-icon">⚠️</div>
+                                    <div>{error}</div>
+                                    <Button
+                                        color="primary"
+                                        size="small"
+                                        onClick={() => loadData(selectedStoreId)}
+                                    >
+                                        Retry
+                                    </Button>
                                 </div>
                             </Card>
-                        ))
-                    )}
+                        )}
+
+                        {loading ? (
+                            <Skeleton animated paragraph={{ rows: 3 }} />
+                        ) : filteredMenus.length === 0 ? (
+                            <Empty description="No items available" />
+                        ) : (
+                            filteredMenus.map(menu => (
+                                <Card
+                                    key={menu.id}
+                                    className="menu-card"
+                                    onClick={() => onSelectMenu(menu)}
+                                >
+                                    <div className="menu-card-content">
+                                        {menu.imageUrl && !imageErrors[menu.id] ? (
+                                            <img
+                                                src={menu.imageUrl}
+                                                alt={menu.name}
+                                                className="menu-image"
+                                                onError={() => handleImageError(menu.id)}
+                                            />
+                                        ) : (
+                                            <div className="placeholder-icon">☕</div>
+                                        )}
+                                        <div className="menu-info">
+                                            <div className="menu-name">{menu.name}</div>
+                                            <div className="menu-category">
+                                                <Tag color="default">
+                                                    {getCategoryLabel(menu.category)}
+                                                </Tag>
+                                            </div>
+                                            <div className="menu-bottom">
+                                                <div className="menu-price">
+                                                    £{menu.skus?.[0]?.price || '0.00'}
+                                                </div>
+                                                <Button
+                                                    color="primary"
+                                                    fill="solid"
+                                                    size="small"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onSelectMenu(menu);
+                                                    }}
+                                                >
+                                                    Select Size
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))
+                        )}
+                        </div>
+                    </PullToRefresh>
                 </div>
             </div>
 

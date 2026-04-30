@@ -36,20 +36,17 @@ function Menu({ initialPage = 'menu', onCartOpen, cartClickTrigger }) {
   }
 
   return (
-    <PullToRefresh onRefresh={async () => console.log('refresh')}>
-      <div className="main-content">
-        {currentPage === 'menu' && (
-          <MenuPage onSelectMenu={handleSelectMenu} onOpenCart={handleOpenCart} />
-        )}
-        {currentPage === 'detail' && selectedMenu && (
-          <MenuDetailPage menu={selectedMenu} onBack={handleBackFromDetail} />
-        )}
-        {currentPage === 'cart' && (
-          <CartPage onBack={handleBackFromCart} />
-        )}
-        <div style={{ height: 100 }} />
-      </div>
-    </PullToRefresh>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+      {currentPage === 'menu' && (
+        <MenuPage onSelectMenu={handleSelectMenu} onOpenCart={handleOpenCart} />
+      )}
+      {currentPage === 'detail' && selectedMenu && (
+        <MenuDetailPage menu={selectedMenu} onBack={handleBackFromDetail} />
+      )}
+      {currentPage === 'cart' && (
+        <CartPage onBack={handleBackFromCart} />
+      )}
+    </div>
   )
 }
 

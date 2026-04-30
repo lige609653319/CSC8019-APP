@@ -38,8 +38,10 @@ const Orders = () => {
     if (loading && orders.length === 0) return <div style={{ padding: 20, textAlign: 'center' }}><DotLoading color='primary' /></div>;
 
     return (
-        <div className="app-container">
-            <NavBar back={null}>My Order History</NavBar>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <NavBar className="nav-bar" back={null}>
+                <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>Orders</span>
+            </NavBar>
             <div className="content-scroll">
                 <PullToRefresh onRefresh={loadOrders}>
                     {error ? (

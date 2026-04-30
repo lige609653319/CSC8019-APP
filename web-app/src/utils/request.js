@@ -2,7 +2,8 @@ import axios from 'axios';
 import { Toast } from 'antd-mobile';
 
 const request = axios.create({
-  baseURL: '/api', // Use proxy defined in vite.config.js
+  // Use VITE_API_URL from .env file, fallback to '/api' if not defined
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   timeout: 10000,
 });
 
