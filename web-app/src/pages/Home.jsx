@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react'
 import {
     NavBar,
-    // SearchBar,
     Card,
     Button,
     Badge,
     Image,
     TabBar,
     List,
-    PullToRefresh
+    PullToRefresh,
+    Popup,
+    Dialog,
+    Toast,
+    Empty
 } from 'antd-mobile'
 import {
     ShoppingCart,
     LayoutGrid,
     List as ListIcon,
     User,
-    ClipboardList
+    ClipboardList,
+    MapPin,
+    ChevronRight,
+    Clock
 } from 'lucide-react'
 import { fetchLoyaltyBalance, fetchLoyaltyTransactions } from '../utils/loyaltyApi'
+import { storeApi } from '../utils/menuApi'
 import LoyaltyClubSection from '../components/LoyaltyClubSection'
 import TrainInfo from '../components/TrainInfo'
 import Orders from './Orders'
@@ -26,33 +33,120 @@ import { useCart } from './CartContext'
 import '../App.css'
 
 const COFFEE_DATA = [
-    { id: 1, name: 'Americano', price: 4.00, image: 'https://images.unsplash.com/photo-1551033406-611cf9a28f67?auto=format&fit=crop&w=200&q=80', description: 'Freshly brewed espresso with hot water.' },
-    { id: 2, name: 'Latte', price: 5.50, image: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=200&q=80', description: 'Espresso with steamed milk and a light layer of foam.' },
-    { id: 3, name: 'Cappuccino', price: 5.25, image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=200&q=80', description: 'Equal parts of espresso, steamed milk, and milk foam.' },
-    { id: 4, name: 'Mocha', price: 6.00, image: 'https://images.unsplash.com/photo-1541167760496-162955ed8a9f?auto=format&fit=crop&w=200&q=80', description: 'Espresso mixed with chocolate and steamed milk.' },
-    { id: 5, name: 'Flat White', price: 5.75, image: 'https://images.unsplash.com/photo-1512568433530-5531d9577af5?auto=format&fit=crop&w=200&q=80', description: 'Espresso with micro-foamed milk.' },
+    {
+        id: 1,
+        name: 'Americano',
+        price: 4.00,
+        image: 'https://images.unsplash.com/photo-1551033406-611cf9a28f67?auto=format&fit=crop&w=200&q=80',
+        description: 'Freshly brewed espresso with hot water.'
+    },
+    {
+        id: 2,
+        name: 'Latte',
+        price: 5.50,
+        image: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=200&q=80',
+        description: 'Espresso with steamed milk and a light layer of foam.'
+    },
+    {
+        id: 3,
+        name: 'Cappuccino',
+        price: 5.25,
+        image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=200&q=80',
+        description: 'Equal parts of espresso, steamed milk, and milk foam.'
+    },
+    {
+        id: 4,
+        name: 'Mocha',
+        price: 6.00,
+        image: 'https://images.unsplash.com/photo-1541167760496-162955ed8a9f?auto=format&fit=crop&w=200&q=80',
+        description: 'Espresso mixed with chocolate and steamed milk.'
+    },
+    {
+        id: 5,
+        name: 'Flat White',
+        price: 5.75,
+        image: 'https://images.unsplash.com/photo-1512568433530-5531d9577af5?auto=format&fit=crop&w=200&q=80',
+        description: 'Espresso with micro-foamed milk.'
+    },
 ]
 
+const DEFAULT_STORE_ID = 1
+
 function Home() {
+    const savedStoreId = Number(localStorage.getItem('selectedStoreId')) || DEFAULT_STORE_ID
+
     const [activeKey, setActiveKey] = useState('home')
     const [menuCurrentPage, setMenuCurrentPage] = useState('menu')
-    const [cartClickCount, setCartClickCount] = useState(0)  // Add trigger for cart clicks
-    const [selectedMenu, setSelectedMenu] = useState(null)
+    const [cartClickCount, setCartClickCount] = useState(0)
     const [loyaltyBalance, setLoyaltyBalance] = useState(null)
     const [loyaltyTransactions, setLoyaltyTransactions] = useState([])
     const [loyaltyLoading, setLoyaltyLoading] = useState(false)
     const [loyaltyError, setLoyaltyError] = useState('')
     const [trainModalVisible, setTrainModalVisible] = useState(false)
-    const { getTotalCount, addToCart } = useCart()
+
+    const [selectedStoreId, setSelectedStoreId] = useState(savedStoreId)
+    const [currentStore, setCurrentStore] = useState(null)
+    const [stores, setStores] = useState([])
+    const [storePopupVisible, setStorePopupVisible] = useState(false)
+
+    const {
+        getTotalCount,
+        addToCart,
+        cartItems,
+        clearCart
+    } = useCart()
+
+    const loadStores = async () => {
+        try {
+            const storeList = await storeApi.getStores()
+
+            const activeStores = storeList.filter(item =>
+                !item.status || item.status === 'ACTIVE'
+            )
+
+            setStores(activeStores)
+
+            if (activeStores.length > 0) {
+                const currentStoreExists = activeStores.some(
+                    item => Number(item.id) === Number(selectedStoreId)
+                )
+
+                if (!currentStoreExists) {
+                    const firstStore = activeStores[0]
+                    setSelectedStoreId(firstStore.id)
+                    setCurrentStore(firstStore)
+                    localStorage.setItem('selectedStoreId', String(firstStore.id))
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load stores:', error)
+            Toast.show({
+                content: 'Failed to load stores.',
+                position: 'top',
+            })
+        }
+    }
+
+    const loadCurrentStore = async (storeId = selectedStoreId) => {
+        try {
+            const storeData = await storeApi.getStoreById(storeId)
+            console.log('Current store data:', storeData)
+            setCurrentStore(storeData)
+        } catch (error) {
+            console.error('Failed to load current store:', error)
+        }
+    }
 
     const loadLoyaltyData = async () => {
         setLoyaltyLoading(true)
         setLoyaltyError('')
+
         try {
             const [balance, transactions] = await Promise.all([
                 fetchLoyaltyBalance(),
                 fetchLoyaltyTransactions(5)
             ])
+
             setLoyaltyBalance(balance)
             setLoyaltyTransactions(Array.isArray(transactions) ? transactions : [])
         } catch (err) {
@@ -73,13 +167,90 @@ function Home() {
     }
 
     useEffect(() => {
-        if (activeKey === 'profile') loadLoyaltyData()
+        loadStores()
+        loadCurrentStore(savedStoreId)
+    }, [])
+
+    useEffect(() => {
+        if (activeKey === 'home') {
+            const latestStoreId = Number(localStorage.getItem('selectedStoreId')) || DEFAULT_STORE_ID
+            setSelectedStoreId(latestStoreId)
+            loadCurrentStore(latestStoreId)
+            loadStores()
+        }
+
+        if (activeKey === 'profile') {
+            loadLoyaltyData()
+        }
     }, [activeKey])
 
     const handleCartClick = () => {
         setActiveKey('menu')
         setMenuCurrentPage('cart')
-        setCartClickCount(prev => prev + 1)  // Trigger cart update
+        setCartClickCount(prev => prev + 1)
+    }
+
+    const switchStore = (newStore) => {
+        setSelectedStoreId(newStore.id)
+        setCurrentStore(newStore)
+        localStorage.setItem('selectedStoreId', String(newStore.id))
+        setStorePopupVisible(false)
+
+        Toast.show({
+            content: `Store switched to ${getStoreLocation(newStore)}`,
+            position: 'top',
+            duration: 1500,
+        })
+    }
+
+    const handleStoreSelect = (newStore) => {
+        if (!newStore) {
+            return
+        }
+
+        if (Number(newStore.id) === Number(selectedStoreId)) {
+            setStorePopupVisible(false)
+            return
+        }
+
+        if (cartItems && cartItems.length > 0) {
+            Dialog.confirm({
+                title: 'Switch store?',
+                content: 'Changing store will clear your current cart. Do you want to continue?',
+                confirmText: 'Switch',
+                cancelText: 'Cancel',
+                onConfirm: () => {
+                    clearCart()
+                    switchStore(newStore)
+                },
+            })
+            return
+        }
+
+        switchStore(newStore)
+    }
+
+    const getStoreLocation = (storeItem = currentStore) => {
+        return storeItem?.locationName || storeItem?.location_name || 'Choose store'
+    }
+
+    const getStoreName = (storeItem = currentStore) => {
+        return storeItem?.name || 'Whistlestop Coffee Hut'
+    }
+
+    const getStoreHours = (storeItem = currentStore) => {
+        if (!storeItem) {
+            return 'Opening hours not set'
+        }
+
+        const openingTime = storeItem.openingTime || storeItem.opening_time
+        const closingTime = storeItem.closingTime || storeItem.closing_time
+
+        if (openingTime && closingTime) {
+            return `${openingTime} - ${closingTime}`
+        }
+
+        return 'Closed'
     }
 
     const tabs = [
@@ -104,10 +275,6 @@ function Home() {
             >
                 <span style={{ fontWeight: 'bold', color: '#6F4E37' }}>Coffee Client</span>
             </NavBar>
-
-            {/* <div className="search-wrapper">
-                <SearchBar placeholder='Search for coffee...' showCancelButton />
-            </div> */}
 
             <div className="content-scroll">
                 {activeKey === 'profile' ? (
@@ -134,8 +301,96 @@ function Home() {
                         <Menu initialPage={menuCurrentPage} cartClickTrigger={cartClickCount} />
                     </div>
                 ) : (
-                    <PullToRefresh onRefresh={async () => console.log('refresh')}>
+                    <PullToRefresh onRefresh={async () => {
+                        await loadStores()
+                        await loadCurrentStore()
+                    }}>
                         <div className="main-content">
+                            <div
+                                onClick={() => setStorePopupVisible(true)}
+                                style={{
+                                    backgroundColor: '#fff',
+                                    borderRadius: '14px',
+                                    padding: '14px 16px',
+                                    marginBottom: '16px',
+                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: '12px',
+                                    }}
+                                >
+                                    <div style={{ minWidth: 0 }}>
+                                        <div
+                                            style={{
+                                                fontSize: '18px',
+                                                fontWeight: 700,
+                                                color: '#6F4E37',
+                                                lineHeight: '24px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                            }}
+                                        >
+                                            {getStoreName()}
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                marginTop: '8px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                fontSize: '14px',
+                                                color: '#666',
+                                            }}
+                                        >
+                                            <MapPin size={16} color="#999" style={{ flexShrink: 0 }} />
+
+                                            <span
+                                                style={{
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                }}
+                                            >
+                                                {getStoreLocation()}
+                                            </span>
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                marginTop: '6px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                fontSize: '14px',
+                                                color: '#666',
+                                            }}
+                                        >
+                                            <Clock size={16} color="#999" style={{ flexShrink: 0 }} />
+
+                                            <span
+                                                style={{
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                }}
+                                            >
+                                                {getStoreHours()}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <ChevronRight size={22} color="#6F4E37" style={{ flexShrink: 0 }} />
+                                </div>
+                            </div>
+
                             <h2 className="section-title">Exclusive Offers</h2>
                             <Card className="promo-card">
                                 <div className="promo-image-container">
@@ -149,7 +404,9 @@ function Home() {
                                 <div className="promo-info">
                                     <h3>Spring Collection</h3>
                                     <p>Taste the freshness of our new seasonal blends.</p>
-                                    <Button color="primary" size="small" shape="rounded">Order Now</Button>
+                                    <Button color="primary" size="small" shape="rounded">
+                                        Order Now
+                                    </Button>
                                 </div>
                             </Card>
 
@@ -172,9 +429,9 @@ function Home() {
                                             <div className="item-extra">
                                                 <span className="price">${coffee.price.toFixed(2)}</span>
                                                 <Button
-                                                    size='mini'
-                                                    color='primary'
-                                                    fill='solid'
+                                                    size="mini"
+                                                    color="primary"
+                                                    fill="solid"
                                                     className="add-btn"
                                                     onClick={addToCart}
                                                 >
@@ -193,6 +450,87 @@ function Home() {
                 )}
             </div>
 
+            <Popup
+                visible={storePopupVisible}
+                onMaskClick={() => setStorePopupVisible(false)}
+                bodyStyle={{
+                    borderTopLeftRadius: '16px',
+                    borderTopRightRadius: '16px',
+                    minHeight: '280px',
+                    maxHeight: '70vh',
+                    overflowY: 'auto',
+                }}
+            >
+                <div style={{ padding: '16px' }}>
+                    <div
+                        style={{
+                            fontSize: '18px',
+                            fontWeight: 'bold',
+                            marginBottom: '12px',
+                            color: '#6F4E37',
+                        }}
+                    >
+                        Choose store
+                    </div>
+
+                    {stores.length === 0 ? (
+                        <Empty description="No stores available" />
+                    ) : (
+                        <List>
+                            {stores.map(item => (
+                                <List.Item
+                                    key={item.id}
+                                    onClick={() => handleStoreSelect(item)}
+                                    extra={
+                                        Number(item.id) === Number(selectedStoreId)
+                                            ? 'Selected'
+                                            : ''
+                                    }
+                                >
+                                    <div>
+                                        <div style={{ fontWeight: 600 }}>
+                                            {getStoreLocation(item)}
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                fontSize: '12px',
+                                                color: '#999',
+                                                marginTop: '3px',
+                                            }}
+                                        >
+                                            {getStoreName(item)}
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                fontSize: '12px',
+                                                color: '#999',
+                                                marginTop: '3px',
+                                            }}
+                                        >
+                                            Opening hours: {getStoreHours(item)}
+                                        </div>
+
+                                        {item.code && (
+                                            <div
+                                                style={{
+                                                    fontSize: '12px',
+                                                    color: '#999',
+                                                    marginTop: '3px',
+                                                }}
+                                            >
+                                                Store code: {item.code}
+                                            </div>
+                                        )}
+                                    </div>
+                                </List.Item>
+                            ))}
+                        </List>
+                    )}
+                </div>
+            </Popup>
+
             <div className="tab-bar-wrapper">
                 <TabBar activeKey={activeKey} onChange={setActiveKey}>
                     {tabs.map(item => (
@@ -200,9 +538,6 @@ function Home() {
                     ))}
                 </TabBar>
             </div>
-
-
-
 
             <TrainInfo
                 visible={trainModalVisible}

@@ -159,11 +159,15 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
             return 'Choose store';
         }
 
-        if (storeItem.locationName) {
-            return `${storeItem.name} - ${storeItem.locationName}`;
+        return storeItem.locationName || storeItem.name || 'Choose store';
+    };
+
+    const getStoreFullName = (storeItem) => {
+        if (!storeItem) {
+            return '';
         }
 
-        return storeItem.name || 'Whistlestop Coffee Hut';
+        return storeItem.name || storeItem.locationName || '';
     };
 
     const switchStoreByStation = (stationName) => {
@@ -259,7 +263,6 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
     };
 
     const storeName = getStoreDisplayName(store);
-    const displayStation = selectedStation || 'Choose your station';
 
     return (
         <div className="menu-page">
@@ -315,8 +318,22 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                 }
                 back={null}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <span
+                        style={{
+                            fontWeight: 'bold',
+                            color: '#6F4E37',
+                            fontSize: '18px',
+                            lineHeight: '22px',
+                        }}
+                    >
                         Whistlestop Coffee Hut
                     </span>
 
@@ -326,34 +343,30 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                             fontSize: '13px',
                             color: '#6F4E37',
                             cursor: 'pointer',
-                            marginTop: '3px',
+                            marginTop: '4px',
                             display: 'flex',
                             alignItems: 'center',
+                            justifyContent: 'center',
                             gap: '4px',
-                            maxWidth: '260px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
+                            maxWidth: '320px',
+                            width: '100%',
+                            textAlign: 'center',
+                            lineHeight: '18px',
                         }}
                     >
-                        <MapPin size={14} />
-                        <span>{storeName}</span>
-                        <ChevronDown size={14} />
-                    </div>
+                        <MapPin size={14} style={{ flexShrink: 0 }} />
 
-                    <div
-                        onClick={() => setTrainModalVisible(true)}
-                        style={{
-                            fontSize: '13px',
-                            color: '#1890ff',
-                            cursor: 'pointer',
-                            marginTop: '2px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                        }}
-                    >
-                        🚆 {displayStation}
+                        <span
+                            style={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {storeName}
+                        </span>
+
+                        <ChevronDown size={14} style={{ flexShrink: 0 }} />
                     </div>
                 </div>
             </NavBar>
@@ -472,17 +485,21 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                                     ) : (
                                         <div className="placeholder-icon">☕</div>
                                     )}
+
                                     <div className="menu-info">
                                         <div className="menu-name">{menu.name}</div>
+
                                         <div className="menu-category">
                                             <Tag color="default">
                                                 {getCategoryLabel(menu.category)}
                                             </Tag>
                                         </div>
+
                                         <div className="menu-bottom">
                                             <div className="menu-price">
                                                 £{menu.skus?.[0]?.price || '0.00'}
                                             </div>
+
                                             <Button
                                                 color="primary"
                                                 fill="solid"
@@ -542,6 +559,19 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                                         <div style={{ fontWeight: 600 }}>
                                             {getStoreDisplayName(item)}
                                         </div>
+
+                                        {getStoreFullName(item) && (
+                                            <div
+                                                style={{
+                                                    fontSize: '12px',
+                                                    color: '#999',
+                                                    marginTop: '3px',
+                                                }}
+                                            >
+                                                {getStoreFullName(item)}
+                                            </div>
+                                        )}
+
                                         {item.code && (
                                             <div
                                                 style={{
