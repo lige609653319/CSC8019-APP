@@ -46,11 +46,32 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
         return true;
     };
 
+    useEffect(() => {
+        const fetchStations = async () => {
+            try {
+                const response = await request.get('/raildata/stations');
+                if (response && response.data) {
+                    setStations(response.data);
+                } else if (Array.isArray(response)) {
+                    setStations(response);
+                }
+            } catch (err) {
+                console.error('Failed to fetch stations:', err);
+            }
+        };
+        if (visible) {
+            fetchStations();
+        }
+    }, [visible]);
+
     const fetchTrains = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await request.get('/raildata/trains');
+            const url = selectedStation 
+                ? `/raildata/train?station=${encodeURIComponent(selectedStation)}` 
+                : `/raildata/train`;
+            const response = await request.get(url);
             let data = response.data || response || [];
 
             if (!Array.isArray(data)) {
@@ -76,9 +97,6 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
 
             setTrains(sortedData);
             setFilteredTrains(sortedData);
-
-            const stationList = extractStations(sortedData);
-            setStations(stationList);
 
             setLastUpdated(new Date().toLocaleTimeString());
 
@@ -119,7 +137,7 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [selectedStation]);
 
     useEffect(() => {
         if (!selectedStation) {
@@ -209,21 +227,11 @@ const TrainInfo = ({ visible, onClose, onSelectTrain, externalStation, onSelectS
             platform: train.platform
         });
 
-        let message = `Order placed for train ${train.trainId}\n`;
-        message += `Current: ${train.currentStation}\n`;
-        message += `Status: ${getStatusText(train)}\n`;
-
-        if (prepTime === 0) {
-            message += `Train has ARRIVED! Order will be ready NOW.`;
-        } else {
-            message += `Order will be ready in ${prepTime} minutes (adjusted for train status).`;
-        }
-
-        alert(message);
-
         if (onSelectTrain) {
             onSelectTrain({ ...train, estimatedReadyMinutes: prepTime });
         }
+        
+        onClose();
     };
 
     if (!visible) return null;

@@ -47,9 +47,10 @@ export const MenuDetailPage = ({ menu, onBack }) => {
   return (
     <div className="menu-detail-page">
       <NavBar
+        className="nav-bar"
         onBack={onBack}
       >
-        Details
+        <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>Details</span>
       </NavBar>
 
       <div className="detail-container">

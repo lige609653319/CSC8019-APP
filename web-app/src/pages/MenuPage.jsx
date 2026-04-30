@@ -45,7 +45,10 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
         cartItems,
         clearCart,
         getTotalCount,
+        getSelectedTrain
     } = useCart();
+
+    const selectedTrain = getSelectedTrain();
 
     const handleImageError = (menuId) => {
         setImageErrors(prev => ({ ...prev, [menuId]: true }));
@@ -362,6 +365,31 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                     </div>
                 </div>
 
+                {selectedTrain && (
+                    <div style={{
+                        padding: '8px 12px', 
+                        backgroundColor: '#f6ffed', 
+                        border: '1px solid #b7eb8f', 
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        color: '#389e0d',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Train size={16} />
+                            <strong>{selectedTrain.trainId}</strong>
+                            <Tag color={selectedTrain.status.includes('Delayed') ? 'warning' : 'success'} style={{marginLeft: '4px'}}>
+                                {selectedTrain.status}
+                            </Tag>
+                        </div>
+                        <div style={{ fontWeight: 500 }}>
+                            Arr: {selectedTrain.arrivalTime ? new Date(selectedTrain.arrivalTime).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' }) : '--'}
+                        </div>
+                    </div>
+                )}
+
                 <div className="search-input-wrapper" style={{ padding: '6px 12px' }}>
                     <Search size={18} color="#999" />
                     <Input
@@ -571,7 +599,7 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
             <TrainInfo
                 visible={trainModalVisible}
                 onClose={() => setTrainModalVisible(false)}
-                externalStation={selectedStation}
+                externalStation={selectedStation || store?.locationName}
                 onSelectStation={handleStationSelect}
             />
         </div>

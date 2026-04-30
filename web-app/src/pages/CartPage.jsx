@@ -94,8 +94,8 @@ export const CartPage = ({ onBack, customerId = 1 }) => {
 
     return (
         <div className="cart-page">
-            <NavBar onBack={onBack}>
-                Cart
+            <NavBar className="nav-bar" onBack={onBack}>
+                <span style={{ fontWeight: 'bold', color: '#6F4E37', fontSize: '18px' }}>Cart</span>
             </NavBar>
 
             <div className="cart-container">
