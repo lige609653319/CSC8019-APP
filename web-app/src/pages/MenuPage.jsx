@@ -367,9 +367,9 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
 
                 {selectedTrain && (
                     <div style={{
-                        padding: '8px 12px', 
-                        backgroundColor: '#f6ffed', 
-                        border: '1px solid #b7eb8f', 
+                        padding: '8px 12px',
+                        backgroundColor: '#f6ffed',
+                        border: '1px solid #b7eb8f',
                         borderRadius: '6px',
                         fontSize: '13px',
                         color: '#389e0d',
@@ -380,7 +380,7 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Train size={16} />
                             <strong>{selectedTrain.trainId}</strong>
-                            <Tag color={selectedTrain.status.includes('Delayed') ? 'warning' : 'success'} style={{marginLeft: '4px'}}>
+                            <Tag color={selectedTrain.status.includes('Delayed') ? 'warning' : 'success'} style={{ marginLeft: '4px' }}>
                                 {selectedTrain.status}
                             </Tag>
                         </div>
@@ -467,72 +467,76 @@ export const MenuPage = ({ onSelectMenu, onOpenCart }) => {
                 <div className="menu-list-container">
                     <PullToRefresh onRefresh={async () => await loadData(selectedStoreId)}>
                         <div className="menu-list">
-                        {error && (
-                            <Card className="error-card">
-                                <div className="error-content">
-                                    <div className="error-icon">⚠️</div>
-                                    <div>{error}</div>
-                                    <Button
-                                        color="primary"
-                                        size="small"
-                                        onClick={() => loadData(selectedStoreId)}
-                                    >
-                                        Retry
-                                    </Button>
-                                </div>
-                            </Card>
-                        )}
-
-                        {loading ? (
-                            <Skeleton animated paragraph={{ rows: 3 }} />
-                        ) : filteredMenus.length === 0 ? (
-                            <Empty description="No items available" />
-                        ) : (
-                            filteredMenus.map(menu => (
-                                <Card
-                                    key={menu.id}
-                                    className="menu-card"
-                                    onClick={() => onSelectMenu(menu)}
-                                >
-                                    <div className="menu-card-content">
-                                        {menu.imageUrl && !imageErrors[menu.id] ? (
-                                            <img
-                                                src={menu.imageUrl}
-                                                alt={menu.name}
-                                                className="menu-image"
-                                                onError={() => handleImageError(menu.id)}
-                                            />
-                                        ) : (
-                                            <div className="placeholder-icon">☕</div>
-                                        )}
-                                        <div className="menu-info">
-                                            <div className="menu-name">{menu.name}</div>
-                                            <div className="menu-category">
-                                                <Tag color="default">
-                                                    {getCategoryLabel(menu.category)}
-                                                </Tag>
-                                            </div>
-                                            <div className="menu-bottom">
-                                                <div className="menu-price">
-                                                    £{menu.skus?.[1]?.price || '0.00'}
-                                                </div>
-                                                <Button
-                                                    color="primary"
-                                                    fill="solid"
-                                                    size="small"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onSelectMenu(menu);
-                                                    }}
-                                                >
-                                                    Select Size
-                                                </Button>
-                                            </div>
-                                        </div>
+                            {error && (
+                                <Card className="error-card">
+                                    <div className="error-content">
+                                        <div className="error-icon">⚠️</div>
+                                        <div>{error}</div>
+                                        <Button
+                                            color="primary"
+                                            size="small"
+                                            onClick={() => loadData(selectedStoreId)}
+                                        >
+                                            Retry
+                                        </Button>
                                     </div>
                                 </Card>
-                            ))
-                        )}
+                            )}
+
+                            {loading ? (
+                                <Skeleton animated paragraph={{ rows: 3 }} />
+                            ) : filteredMenus.length === 0 ? (
+                                <Empty description="No items available" />
+                            ) : (
+                                filteredMenus.map(menu => (
+                                    <Card
+                                        key={menu.id}
+                                        className="menu-card"
+                                        onClick={() => onSelectMenu(menu)}
+                                    >
+                                        <div className="menu-card-content">
+                                            {menu.imageUrl && !imageErrors[menu.id] ? (
+                                                <img
+                                                    src={menu.imageUrl}
+                                                    alt={menu.name}
+                                                    className="menu-image"
+                                                    onError={() => handleImageError(menu.id)}
+                                                />
+                                            ) : (
+                                                <div className="placeholder-icon">☕</div>
+                                            )}
+                                            <div className="menu-info">
+                                                <div className="menu-name">{menu.name}</div>
+                                                <div className="menu-category">
+                                                    <Tag color="default">
+                                                        {getCategoryLabel(menu.category)}
+                                                    </Tag>
+                                                </div>
+                                                <div className="menu-bottom">
+                                                    <div className="menu-price">
+                                                        £{
+                                                            menu.skus?.length > 1
+                                                                ? menu.skus[1].price
+                                                                : menu.skus?.[0]?.price || '0.00'
+                                                        }
+                                                    </div>
+                                                    <Button
+                                                        color="primary"
+                                                        fill="solid"
+                                                        size="small"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onSelectMenu(menu);
+                                                        }}
+                                                    >
+                                                        Select Size
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))
+                            )}
                         </div>
                     </PullToRefresh>
                 </div>
