@@ -21,3 +21,10 @@ export const fetchMenuByStore = (storeId) =>
 /** POST /api/orders/create */
 export const createOrder = (payload) =>
   request.post('/orders/create', payload).then((res) => res?.data ?? res);
+
+export const updateOrderStatus = (orderId, status) =>
+    request({
+        url: `/orders/${orderId}/update-status`,
+        method: 'patch',
+        params: { status } // This sends it as a query parameter (?status=...)
+    }).then((res) => res?.data ?? res);
